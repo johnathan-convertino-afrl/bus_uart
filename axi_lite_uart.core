@@ -1,28 +1,24 @@
 CAPI=2:
 
-name: AFRL:device_converter:axis_uart:1.0.0
-description: UART core with rx/tx only (no handshaking at the moment).
+name: AFRL:device:axi_lite_uart:1.0.0
+description: UART bus core for wishbone, register map matches Xilinx UART Lite.
 
 filesets:
   src:
     files:
-      - src/axis_uart.v
-      - src/axis_uart_rx.v
-      - src/axis_uart_tx.v
-      - src/uart_baud_gen.v
+      - src/axi_lite_uart.v
     file_type: verilogSource
   
   tb:
     files:
       - tb/tb_uart.v
-      - tb/tb_uart_baud_gen.v
-      - tb/tb_uart_rx.v
-      - tb/tb_uart_tx.v
     file_type: verilogSource
     
   dep:
     depend:
       - AFRL:utility:helper:1.0.0
+      - AFRL:device:up_uart:1.0.0
+      - AD:common:up_axi:1.0.0
       
   dep_tb:
     depend:
@@ -82,33 +78,6 @@ targets:
       - OUT_FILE_NAME=out_8bit_count.bin
       - RAND_READY=1
       - FIFO_DEPTH
-    
-  sim_baud:
-    <<: *sim
-    description: Simulate only the baud rate generator.
-    toplevel: tb_uart_baud
-    parameters:
-      - IN_FILE_NAME
-      - OUT_FILE_NAME
-      - RAND_READY
-    
-  sim_rx:
-    <<: *sim
-    description: Simulate only the rx block.
-    toplevel: tb_uart_rx
-    parameters:
-      - IN_FILE_NAME
-      - OUT_FILE_NAME
-      - RAND_READY
-    
-  sim_tx:
-    <<: *sim
-    description: Simulate only the tx block.
-    toplevel: tb_uart_tx
-    parameters:
-      - IN_FILE_NAME
-      - OUT_FILE_NAME
-      - RAND_READY
 
 parameters:
   RAND_READY:

@@ -1,0 +1,33 @@
+CAPI=2:
+
+name: AFRL:device:wishbone_classic_uart:1.0.0
+description: UART bus core for wishbone, register map matches Xilinx UART Lite.
+
+filesets:
+  src:
+    files:
+      - src/wishbone_classic_uart.v
+    file_type: verilogSource
+  
+  tb:
+    files:
+      - tb/tb_wishbone_slave.v
+    file_type: verilogSource
+    
+  dep:
+    depend:
+      - AFRL:utility:helper:1.0.0
+      - AFRL:device:up_uart:1.0.0
+      - AFRL:bus:up_wishbone_classic:1.0.0
+    
+targets:
+  default: &default
+    description: Default for IP intergration.
+    filesets: [src, dep]
+  
+  sim: &sim
+    <<: *default
+    description: Base simulation using icarus as default.
+    default_tool: icarus
+    filesets_append: [tb]
+    toplevel: tb_wishbone_slave

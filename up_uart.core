@@ -1,0 +1,33 @@
+CAPI=2:
+
+name: AFRL:device:up_uart:1.0.0
+description: UART bus core for wishbone or AXI4, register map matches Xilinx UART Lite.
+
+filesets:
+  src:
+    files:
+      - src/up_uart.v
+    file_type: verilogSource
+  
+  tb:
+    files:
+      - tb/tb_up_uart.v
+    file_type: verilogSource
+    
+  dep:
+    depend:
+      - AFRL:utility:helper:1.0.0
+      - AFRL:device_converter:axis_uart:1.0.0
+      - AFRL:buffer:fifo
+    
+targets:
+  default: &default
+    description: Default for IP intergration.
+    filesets: [src, dep]
+  
+  sim: &sim
+    <<: *default
+    description: Base simulation using icarus as default.
+    default_tool: icarus
+    filesets_append: [tb]
+    toplevel: tb_up_uart
