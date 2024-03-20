@@ -288,8 +288,8 @@ module up_uart #(
     .RD_SYNC_DEPTH(0),
     .WR_SYNC_DEPTH(0),
     .DC_SYNC_DEPTH(0),
-    .COUNT_DELAY(1),
-    .COUNT_ENA(1),
+    .COUNT_DELAY(0),
+    .COUNT_ENA(0),
     .DATA_ZERO(0),
     .ACK_ENA(0),
     .RAM_TYPE("block")
@@ -323,8 +323,8 @@ module up_uart #(
     .RD_SYNC_DEPTH(0),
     .WR_SYNC_DEPTH(0),
     .DC_SYNC_DEPTH(0),
-    .COUNT_DELAY(1),
-    .COUNT_ENA(1),
+    .COUNT_DELAY(0),
+    .COUNT_ENA(0),
     .DATA_ZERO(0),
     .ACK_ENA(0),
     .RAM_TYPE("block")
