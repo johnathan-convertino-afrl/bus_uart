@@ -1,7 +1,7 @@
 CAPI=2:
 
 name: AFRL:device:axi_lite_uart:1.0.0
-description: UART bus core for wishbone, register map matches Xilinx UART Lite.
+description: UART bus core for axi4 lite, register map matches Xilinx UART Lite.
 
 filesets:
   src:

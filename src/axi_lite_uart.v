@@ -31,6 +31,7 @@
 
 //UART
 module axi_lite_uart #(
+    parameter ADDRESS_WIDTH     = 32,
     parameter CLOCK_SPEED       = 100000000,
     parameter BAUD_RATE         = 115200,
     parameter PARITY_ENA        = 0,
@@ -47,27 +48,27 @@ module axi_lite_uart #(
     input           aclk,
     input           arstn,
     //AXI lite interface
-    input           s_axi_aclk,
-    input           s_axi_aresetn,
-    input           s_axi_awvalid,
-    input   [15:0]  s_axi_awaddr,
-    input   [ 2:0]  s_axi_awprot,
-    output          s_axi_awready,
-    input           s_axi_wvalid,
-    input   [31:0]  s_axi_wdata,
-    input   [ 3:0]  s_axi_wstrb,
-    output          s_axi_wready,
-    output          s_axi_bvalid,
-    output  [ 1:0]  s_axi_bresp,
-    input           s_axi_bready,
-    input           s_axi_arvalid,
-    input   [15:0]  s_axi_araddr,
-    input   [ 2:0]  s_axi_arprot,
-    output          s_axi_arready,
-    output          s_axi_rvalid,
-    output  [31:0]  s_axi_rdata,
-    output  [ 1:0]  s_axi_rresp,
-    input           s_axi_rready,
+    input                       s_axi_aclk,
+    input                       s_axi_aresetn,
+    input                       s_axi_awvalid,
+    input   [ADDRESS_WIDTH-1:0] s_axi_awaddr,
+    input   [ 2:0]              s_axi_awprot,
+    output                      s_axi_awready,
+    input                       s_axi_wvalid,
+    input   [31:0]              s_axi_wdata,
+    input   [ 3:0]              s_axi_wstrb,
+    output                      s_axi_wready,
+    output                      s_axi_bvalid,
+    output  [ 1:0]              s_axi_bresp,
+    input                       s_axi_bready,
+    input                       s_axi_arvalid,
+    input   [ADDRESS_WIDTH-1:0] s_axi_araddr,
+    input   [ 2:0]              s_axi_arprot,
+    output                      s_axi_arready,
+    output                      s_axi_rvalid,
+    output  [31:0]              s_axi_rdata,
+    output  [ 1:0]              s_axi_rresp,
+    input                       s_axi_rready,
     //irq
     output          irq,
     //UART
@@ -78,17 +79,19 @@ module axi_lite_uart #(
   );
 
   //read interface
-  wire          up_rreq;
-  wire          up_rack;
-  wire  [13:0]  up_raddr;
-  wire  [31:0]  up_rdata;
+  wire                      up_rreq;
+  wire                      up_rack;
+  wire  [ADDRESS_WIDTH-3:0] up_raddr;
+  wire  [31:0]              up_rdata;
   //write interface
-  wire          up_wreq;
-  wire          up_wack;
-  wire  [13:0]  up_waddr;
-  wire  [31:0]  up_wdata;
+  wire                      up_wreq;
+  wire                      up_wack;
+  wire  [ADDRESS_WIDTH-3:0] up_waddr;
+  wire  [31:0]              up_wdata;
 
-  up_axi inst_up_axi (
+  up_axi #(
+    .AXI_ADDRESS_WIDTH(ADDRESS_WIDTH)
+  ) inst_up_axi (
     .up_rstn (arstn),
     .up_clk (aclk),
     .up_axi_awvalid(s_axi_awvalid),
@@ -119,6 +122,7 @@ module axi_lite_uart #(
   );
 
   up_uart #(
+    .ADDRESS_WIDTH(ADDRESS_WIDTH),
     .CLOCK_SPEED(CLOCK_SPEED),
     .BAUD_RATE(BAUD_RATE),
     .PARITY_ENA(PARITY_ENA),
