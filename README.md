@@ -1,5 +1,8 @@
 # BUS UART
 ### UART TO BUS (WISHBONE CLASSIC, AXI_LITE)
+
+![image](docs/manual/img/AFRL.png)
+
 ---
 
    author: Jay Convertino   
@@ -58,10 +61,10 @@ This BUS UART uses AXIS UART for its UART data processes.
     * 32 bit register, DATA_BITS downto 0 hold RX UART data.
   - 0x4 = TX FIFO (W)
     * 32 bit register, DATA_BITS downto 0 hold TX UART data.
-  - 0x8 = STATUS REGISTER (W)
-    * 32 bit register with the following bits: 4 = Enable INTR, 1 = RST_RX_FIFO, 0 = RST_TX_FIFO.
-  - 0xC = CONTROL_REGISTER (R)
+  - 0x8 = STATUS REGISTER (R)
     * 32 bit register with the following bits: 7 = Parity Error, 6 = Frame Error, 5 = Overrun Error, 4 = Interupt Enabled, 3 = TX FIFO Full, 2 = TX FIFO Empty, 1 = RX FIFO Full, RX FIFO Data Valid.
+  - 0xC = CONTROL_REGISTER (W)
+    * 32 bit register with the following bits: 4 = Enable INTR, 1 = RST_RX_FIFO, 0 = RST_TX_FIFO.
 
 ### COMPONENTS
 #### SRC

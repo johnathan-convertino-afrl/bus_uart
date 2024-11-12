@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("SystemVerilogModule:inst_up_uart","inst_up_uart");NDSummary.OnSummaryLoaded("SystemVerilogModule:inst_up_uart",[["SystemVerilog","SystemVerilog"]],[["Modules","Module"]],[[40,0,0,"inst_up_uart"]]);

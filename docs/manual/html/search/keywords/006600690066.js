@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("fif",["Variable"],[["FIFO_DEPTH",,[["up_1553",,,,0,"File:up_uart.v:up_1553.FIFO_DEPTH","SystemVerilogModule:up_1553:FIFO_DEPTH"]]]]);

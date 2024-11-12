@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("v",["File"],[["v",,[[,"axi_lite_uart.v",,,0,"File:axi_lite_uart.v:axi_lite_uart.v"],[,"up_uart.v",,,0,"File:up_uart.v:up_uart.v"],[,"wishbone_classic_uart.v",,,0,"File:wishbone_classic_uart.v:wishbone_classic_uart.v"]]]]);

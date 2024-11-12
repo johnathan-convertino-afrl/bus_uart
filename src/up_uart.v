@@ -1,36 +1,76 @@
 //******************************************************************************
-/// @FILE    up_uart.v
-/// @AUTHOR  JAY CONVERTINO
-/// @DATE    2024.02.29
-/// @BRIEF   AXIS UART
-/// @DETAILS Core for interfacing with simple UART communications. Output is
-///          always the size of DATA_BITS.
-///
-///  @LICENSE MIT
-///  Copyright 2024 Jay Convertino
-///
-///  Permission is hereby granted, free of charge, to any person obtaining a copy
-///  of this software and associated documentation files (the "Software"), to 
-///  deal in the Software without restriction, including without limitation the
-///  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or 
-///  sell copies of the Software, and to permit persons to whom the Software is 
-///  furnished to do so, subject to the following conditions:
-///
-///  The above copyright notice and this permission notice shall be included in 
-///  all copies or substantial portions of the Software.
-///
-///  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-///  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-///  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-///  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-///  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-///  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-///  IN THE SOFTWARE.
+// file:    up_uart.v
+//
+// author:  JAY CONVERTINO
+//
+// date:    2024/02/29
+//
+// about:   Brief
+// uP Core for interfacing with axis uart.
+//
+// license: License MIT
+// Copyright 2024 Jay Convertino
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+// sell copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+// IN THE SOFTWARE.
+//
 //******************************************************************************
 
 `timescale 1ns/100ps
 
-//UP UART
+/*
+ * Module: up_1553
+ *
+ * uP based 1553 communications device.
+ *
+ * Parameters:
+ *
+ *   ADDRESS_WIDTH   - Width of the uP address port.
+ *   BUS_WIDTH       - Width of the uP bus data port.
+ *   CLOCK_SPEED     - This is the aclk frequency in Hz
+ *   BAUD_RATE       - Serial Baud, this can be any value including non-standard.
+ *   PARITY_ENA      - Enable Parity for the data in and out.
+ *   PARITY_TYPE     - Set the parity type, 0 = even, 1 = odd, 2 = mark, 3 = space.
+ *   STOP_BITS       - Number of stop bits, 0 to crazy non-standard amounts.
+ *   DATA_BITS       - Number of data bits, 1 to crazy non-standard amounts.
+ *   RX_DELAY        - Delay in rx data input.
+ *   RX_BAUD_DELAY   - Delay in rx baud enable. This will delay when we sample a bit (default is midpoint when rx delay is 0).
+ *   TX_DELAY        - Delay in tx data output. Delays the time to output of the data.
+ *   TX_BAUD_DELAY   - Delay in tx baud enable. This will delay the time the bit output starts.
+ *
+ * Ports:
+ *
+ *   clk            - Clock for all devices in the core
+ *   rstn           - Negative reset
+ *   up_rreq        - uP bus read request
+ *   up_rack        - uP bus read ack
+ *   up_raddr       - uP bus read address
+ *   up_rdata       - uP bus read data
+ *   up_wreq        - uP bus write request
+ *   up_wack        - uP bus write ack
+ *   up_waddr       - uP bus write address
+ *   up_wdata       - uP bus write data
+ *   irq            - Interrupt when data is received
+ *   tx             - transmit for UART (output to RX)
+ *   rx             - receive for UART (input from TX)
+ *   rts            - request to send is a loop with CTS
+ *   cts            - clear to send is a loop with RTS
+ */
 module up_uart #(
     parameter ADDRESS_WIDTH = 32,
     parameter BUS_WIDTH     = 4,
@@ -46,38 +86,71 @@ module up_uart #(
     parameter TX_BAUD_DELAY = 0
   ) 
   (
-    //clock and reset
-    input           clk,
-    input           rstn,
-    //UP interface
-    //read interface
+    input                       clk,
+    input                       rstn,
     input                       up_rreq,
     output                      up_rack,
     input   [ADDRESS_WIDTH-1:0] up_raddr,
     output  [(BUS_WIDTH*8)-1:0] up_rdata,
-    //write interface
     input                       up_wreq,
     output                      up_wack,
     input   [ADDRESS_WIDTH-1:0] up_waddr,
     input   [(BUS_WIDTH*8)-1:0] up_wdata,
-    //irq
-    output          irq,
-    //UART
-    output          tx,
-    input           rx,
-    output          rts,
-    input           cts
+    output                      irq,
+    output                      tx,
+    input                       rx,
+    output                      rts,
+    input                       cts
   );
 
-  //FIFO Depth matches UART LITE (xilinx)
+  // var: FIFO_DEPTH
+  // Depth of the fifo, matches UART LITE (xilinx), so I kept this just cause
   localparam FIFO_DEPTH = 16;
 
-  //register address decoding
-  localparam RX_FIFO_REG = 4'h0;
-  localparam TX_FIFO_REG = 4'h4;
-  localparam STATUS_REG  = 4'h8;
-  localparam CONTROL_REG = 4'hC;
+  // Group: Register Information
+  // Core has 4 registers at the offsets that follow.
+  //
+  //  <RX_FIFO_REG> - h0
+  //  <TX_FIFO_REG> - h4
+  //  <STATUS_REG>  - h8
+  //  <CONTROL_REG> - hC
 
+  // Register Address: RX_FIFO_REG
+  // Defines the address offset for RX FIFO
+  // (see diagrams/reg_RX_FIFO.png)
+  // Valid bits are from DATA_BITS:0, which are data.
+  localparam RX_FIFO_REG = 4'h0;
+  // Register Address: TX_FIFO_REG
+  // Defines the address offset to write the TX FIFO.
+  // (see diagrams/reg_TX_FIFO.png)
+  // Valid bits are from DATA_BITS:0, which are data.
+  localparam TX_FIFO_REG = 4'h4;
+  // Register Address: STATUS_REG
+  // Defines the address offset to read the status bits.
+  // (see diagrams/reg_STATUS.png)
+  localparam STATUS_REG  = 4'h8;
+  /* Register Bits: Status Register Bits
+   *
+   * PE           - 7, Parity error, active high on error
+   * FE           - 6, Frame error, active high on error
+   * OE           - 5, Overrun error, active high on error
+   * irq_en       - 4, 1 when the IRQ is enabled by <CONTROL_REG>
+   * tx_full      - 3, When 1 the tx fifo is full.
+   * tx_empty     - 2, When 1 the tx fifo is empty.
+   * rx_full      - 1, When 1 the rx fifo is full.
+   * rx_valid     - 0, When 1 the rx fifo contains valid data.
+   */
+  // Register Address: CONTROL_REG
+  // Defines the address offset to set the control bits.
+  // (see diagrams/reg_CONTROL.png)
+  // See Also: <ENABLE_INTR_BIT>, <RESET_RX_BIT>, <RESET_TX_BIT>
+  localparam CONTROL_REG = 4'hC;
+  /* Register Bits: Control Register Bits
+   *
+   * ENABLE_INTR_BIT  - 4, Control Register offset bit for enabling the interrupt.
+   * RESET_RX_BIT     - 1, Control Register offset bit for resetting the RX FIFO.
+   * RESET_TX_BIT     - 0, Control Register offset bit for resetting the TX FIFO.
+   */
   localparam ENABLE_INTR_BIT  = 4;
   localparam RESET_RX_BIT     = 1;
   localparam RESET_TX_BIT     = 0;
@@ -243,7 +316,13 @@ module up_uart #(
       end
     end
   end
-  
+
+  //Group: Instantiated Modules
+  /*
+   * Module: inst_axis_uart
+   *
+   * UART instance with AXIS interface for TX/RX
+   */
   axis_uart #(
     .BAUD_CLOCK_SPEED(CLOCK_SPEED),
     .BAUD_RATE(BAUD_RATE),
@@ -256,21 +335,16 @@ module up_uart #(
     .TX_DELAY(TX_DELAY),
     .TX_BAUD_DELAY(TX_BAUD_DELAY)
   ) inst_axis_uart (
-    //axis clock and reset
     .aclk(clk),
     .arstn(rstn),
-    //receive error
     .parity_err(s_parity_err),
     .frame_err(s_frame_err),
-    //slave input
     .s_axis_tdata(tx_rdata[DATA_BITS-1:0]),
     .s_axis_tvalid(tx_valid),
     .s_axis_tready(s_axis_tready),
-    //master output
     .m_axis_tdata(m_axis_tdata),
     .m_axis_tvalid(m_axis_tvalid),
     .m_axis_tready(~rx_full),
-    //UART
     .uart_clk(clk),
     .uart_rstn(rstn),
     .tx(tx),
@@ -279,7 +353,11 @@ module up_uart #(
     .cts(cts)
   );
 
-  //fifo for data to receive via uart
+  /*
+   * Module: inst_rx_fifo
+   *
+   * Buffer up to 16 items output from the axis_1553_encoder.
+   */
   fifo #(
     .FIFO_DEPTH(FIFO_DEPTH),
     .BYTE_WIDTH(BUS_WIDTH),
@@ -294,27 +372,28 @@ module up_uart #(
     .ACK_ENA(0),
     .RAM_TYPE("block")
   ) inst_rx_fifo (
-    // read interface
     .rd_clk(clk),
     .rd_rstn(rstn & r_rstn_rx_delay[0]),
     .rd_en(s_rx_ren),
     .rd_valid(rx_valid),
     .rd_data(rx_rdata),
     .rd_empty(rx_empty),
-    // write interface
     .wr_clk(clk),
     .wr_rstn(rstn & r_rstn_rx_delay[0]),
     .wr_en(m_axis_tvalid),
     .wr_ack(),
     .wr_data({{(BUS_WIDTH*8-DATA_BITS){1'b0}}, m_axis_tdata}),
     .wr_full(rx_full),
-    // data count interface
     .data_count_clk(clk),
     .data_count_rstn(rstn & r_rstn_rx_delay[0]),
     .data_count()
   );
 
-  //fifo for data to transmit via uart
+  /*
+   * Module: inst_tx_fifo
+   *
+   * Buffer up to 16 items to input to the axis_1553_decoder.
+   */
   fifo #(
     .FIFO_DEPTH(FIFO_DEPTH),
     .BYTE_WIDTH(BUS_WIDTH),
@@ -329,21 +408,18 @@ module up_uart #(
     .ACK_ENA(0),
     .RAM_TYPE("block")
   ) inst_tx_fifo (
-    // read interface
     .rd_clk(clk),
     .rd_rstn(rstn & r_rstn_tx_delay[0]),
     .rd_en(s_axis_tready),
     .rd_valid(tx_valid),
     .rd_data(tx_rdata),
     .rd_empty(tx_empty),
-    // write interface
     .wr_clk(clk),
     .wr_rstn(rstn & r_rstn_tx_delay[0]),
     .wr_en(r_tx_wen),
     .wr_ack(),
     .wr_data(r_tx_wdata),
     .wr_full(tx_full),
-    // data count interface
     .data_count_clk(clk),
     .data_count_rstn(rstn & r_rstn_tx_delay[0]),
     .data_count()
