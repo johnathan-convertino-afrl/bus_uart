@@ -22,8 +22,15 @@
 #### Previous
   - none
 
-### Dependencies
+### DOCUMENTATION
+  For detailed usage information, please navigate to one of the following sources. They are the same, just in a different format.
+
+  - [bus_uart.pdf](docs/manual/bus_uart.pdf)
+  - [github page](https://johnathan-convertino-afrl.github.io/bus_uart/)
+
+### DEPENDENCIES
 #### Build
+
   - AFRL:utility:helper:1.0.0
   - AFRL:device_converter:axis_uart:1.0.0
   - AFRL:buffer:fifo
@@ -31,32 +38,25 @@
   - AD:common:up_axi:1.0.0 (FOR AXI LITE)
   
 #### Simulation
+
   - AFRL:simulation:axis_stimulator
 
-### IP USAGE
-#### INSTRUCTIONS
+### PARAMETERS
 
-BUS UART core for TTL rs232 software mode data communications. No hardware handshake.
-This contains its own internal baud rate generator that creates an enable to allow data output  
-or sampling. Baud clock and aclk can be the same clock.  
+  *   ADDRESS_WIDTH   - Width of the axi address bus
+  *   CLOCK_SPEED     - This is the aclk frequency in Hz
+  *   BAUD_RATE       - Serial Baud, this can be any value including non-standard.
+  *   PARITY_ENA      - Enable Parity for the data in and out.
+  *   PARITY_TYPE     - Set the parity type, 0 = even, 1 = odd, 2 = mark, 3 = space.
+  *   STOP_BITS       - Number of stop bits, 0 to crazy non-standard amounts.
+  *   DATA_BITS       - Number of data bits, 1 to crazy non-standard amounts.
+  *   RX_DELAY        - Delay in rx data input.
+  *   RX_BAUD_DELAY   - Delay in rx baud enable. This will delay when we sample a bit (default is midpoint when rx delay is 0).
+  *   TX_DELAY        - Delay in tx data output. Delays the time to output of the data.
+  *   TX_BAUD_DELAY   - Delay in tx baud enable. This will delay the time the bit output starts.
 
-RTS/CTS is not implemented, it simply asserts it as if its always ready, and ignores CTS.
+### REGISTERS
 
-This BUS UART uses AXIS UART for its UART data processes.
-
-#### PARAMETERS
-* BAUD_CLOCK_SPEED : DEFAULT = 2000000 : Clock speed of the baud clock. Best if it is a integer multiple of the baud rate, but does not have to be.
-* BAUD_RATE : DEFAULT = 2000000 : Baud rate of the input/output data for the core.
-* PARITY_ENA : DEFAULT = 1 : Enable parity check and generate.
-* PARITY_TYPE : DEFAULT = 1 : Set the parity type, 0 = even, 1 = odd, 2 = mark, 3 = space.
-* STOP_BITS : DEFAULT = 1 : Number of stop bits, 0 to crazy non-standard amounts.
-* DATA_BITS : DEFAULT = 8 : Number of data bits, 1 to crazy non-standard amounts.
-* RX_DELAY : DEFAULT = 0 : Delay in rx data input.
-* RX_BAUD_DELAY : DEFAULT = 0 : Delay in rx baud enable. This will delay when we sample a bit (default is midpoint when rx delay is 0).
-* TX_DELAY : DEFAULT = 0 : Delay in tx data output. Delays the time to output of the data.
-* TX_BAUD_DELAY : DEFAULT = 0 : Delay in tx baud enable. This will delay the time the bit output starts.
-
-#### REGISTERS
   - 0x0 = RX_FIFO (R)
     * 32 bit register, DATA_BITS downto 0 hold RX UART data.
   - 0x4 = TX FIFO (W)
@@ -78,12 +78,12 @@ This BUS UART uses AXIS UART for its UART data processes.
 * tb_up_uart.v
 * tb_wishbone_slave.v
   
-### fusesoc
+### FUSESOC
 
 * fusesoc_info.core created.
 * Simulation uses icarus to run data through the core.
 
-#### TARGETS
+#### Targets
 
 * RUN WITH: (fusesoc run --target=sim VENDER:CORE:NAME:VERSION)
   - default (for IP integration builds)
