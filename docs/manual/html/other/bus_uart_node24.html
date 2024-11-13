@@ -54,18 +54,18 @@ Module Documentation
 </H1>
 
 <P>
-up_1553 is the module that integrates the AXI streaming 1553 encoder/decoder.
+up_uart is the module that integrates the AXIS UART core.
 This includes FIFO's that have there inputs/outputs for data tied to registers mapped in the uP bus.
 The uP bus is the microprocessor bus based on Analog Devices design. It resembles a APB bus in design,
-and is the bridge to other buses BUS1553 can use. This makes changing for AXI Lite, to Wishbone to whatever
+and is the bridge to other buses BUS UART can use. This makes changing for AXI Lite, to Wishbone to whatever
 quick and painless.
 
 <P>
-axi_lite_1553 module adds a AXI Lite to uP (microprocessor) bus converter. The converter is
+axi_lite_uart module adds a AXI Lite to uP (microprocessor) bus converter. The converter is
 from Analog Devices.
 
 <P>
-wishbone_classic_1553 module adds a Wishbone Classic to uP (microprocessor) bus converter. This
+wishbone_classic_uart module adds a Wishbone Classic to uP (microprocessor) bus converter. This
 converter was designed for Wishbone Classic only, NOT pipelined.
 
 <P>
@@ -75,7 +75,7 @@ converter was designed for Wishbone Classic only, NOT pipelined.
 <BR>
 
 <P>
-The next sections document these modules in great detail. up_1553 contains the register map explained, and what the various bits do.
+The next sections document these modules in great detail. up_uart contains the register map explained, and what the various bits do.
 
 <P>
 <BR><HR>

@@ -11,6 +11,7 @@ HTML_DIR=html
 ND_HTML=$(HTML_DIR)/index.html
 ND_HTML_FILES=$(wildcard $(HTML_DIR)/files/*.html)
 
+LAT_COM_SRC=$(SRC_DIR)/common.tex
 LAT_HTML_SRC=$(SRC_DIR)/html.tex
 LAT_HTML_HTML=$(LAT_HTML_SRC:.tex=.html)
 LAT_HTML_CSS=$(LAT_HTML_SRC:.tex=.css)
@@ -21,7 +22,7 @@ HTML_LAT_DIR=$(HTML_DIR)/other
 
 all: $(ND_HTML)
 
-$(ND_HTML): $(LAT_HTML_HTML) $(VERILOG_SRC)
+$(ND_HTML): $(LAT_HTML_HTML) $(VERILOG_SRC) $(LAT_COM_SRC)
 	naturaldocs $(CFG_DIR) -ro
 
 $(LAT_HTML_HTML): $(LAT_HTML_SRC)

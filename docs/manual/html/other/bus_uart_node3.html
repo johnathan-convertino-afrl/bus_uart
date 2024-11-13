@@ -53,10 +53,10 @@ Introduction</A>
 </H2>
 
 <P>
-BUS1553 is a core for interfacing the PMOD1553 device to a bus of choice. The core will process data to and from the PMOD1553.
+BUS UART is a core for interfacing over RS232 UART to a bus of choice. The core will process data to and from the UART.
 The data can then be accessed over a BUS, currently AXI lite or Wishbone Classic, and processed as needed. All input and output
-over the bus goes into FIFOs that is then tied to the demodulation and modulation cores, which then send/recv the differential data
-to/from the PMOD1553 device. The following is information on how to use the device in an FPGA, software, and in simulation.
+over the bus goes into FIFOs that is then tied to the AXIS UART core. The following is information on how to use the device
+in an FPGA, software, and in simulation.
 
 <P>
 <BR><HR>
