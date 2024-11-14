@@ -6,8 +6,7 @@
 //  date:     2024/02/29
 //
 //  about:    Brief
-//  AXI Lite 1553 is a core for interfacing with 1553 devices over the
-//  AXI lite bus.
+//  AXI Lite UART is a core for interfacing with UART devices.
 //
 //  license: License MIT
 //  Copyright 2024 Jay Convertino
