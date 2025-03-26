@@ -34,13 +34,13 @@
 `timescale 1ns/100ps
 
 /*
- * Module: up_1553
+ * Module: up_uart
  *
- * uP based 1553 communications device.
+ * uP based uart communications device.
  *
  * Parameters:
  *
- *   ADDRESS_WIDTH   - Width of the uP address port.
+ *   ADDRESS_WIDTH   - Width of the uP address port, max 32 bit.
  *   BUS_WIDTH       - Width of the uP bus data port.
  *   CLOCK_SPEED     - This is the aclk frequency in Hz
  *   BAUD_RATE       - Serial Baud, this can be any value including non-standard.
@@ -86,22 +86,26 @@ module up_uart #(
     parameter TX_BAUD_DELAY = 0
   ) 
   (
-    input                       clk,
-    input                       rstn,
-    input                       up_rreq,
-    output                      up_rack,
-    input   [ADDRESS_WIDTH-1:0] up_raddr,
-    output  [(BUS_WIDTH*8)-1:0] up_rdata,
-    input                       up_wreq,
-    output                      up_wack,
-    input   [ADDRESS_WIDTH-1:0] up_waddr,
-    input   [(BUS_WIDTH*8)-1:0] up_wdata,
-    output                      irq,
-    output                      tx,
-    input                       rx,
-    output                      rts,
-    input                       cts
+    input                                       clk,
+    input                                       rstn,
+    input                                       up_rreq,
+    output                                      up_rack,
+    input   [ADDRESS_WIDTH-(BUS_WIDTH-1)-1:0]   up_raddr,
+    output  [(BUS_WIDTH*8)-1:0]                 up_rdata,
+    input                                       up_wreq,
+    output                                      up_wack,
+    input   [ADDRESS_WIDTH-(BUS_WIDTH-1)-1:0]   up_waddr,
+    input   [(BUS_WIDTH*8)-1:0]                 up_wdata,
+    output                                      irq,
+    output                                      tx,
+    input                                       rx,
+    output                                      rts,
+    input                                       cts
   );
+
+  // var: DIVISOR
+  // Divide the address register default location for 1 byte access to multi byte access. (register offsets are byte offsets).
+  localparam DIVISOR = BUS_WIDTH-1;
 
   // var: FIFO_DEPTH
   // Depth of the fifo, matches UART LITE (xilinx), so I kept this just cause
@@ -118,17 +122,17 @@ module up_uart #(
   // Register Address: RX_FIFO_REG
   // Defines the address offset for RX FIFO
   // (see diagrams/reg_RX_FIFO.png)
-  // Valid bits are from DATA_BITS:0, which are data.
-  localparam RX_FIFO_REG = 4'h0;
+  // Valid bits are from DATA_BITS:0, which are data. Multiply by 4 to get register offset on bus.
+  localparam RX_FIFO_REG = 4'h0 >> DIVISOR;
   // Register Address: TX_FIFO_REG
   // Defines the address offset to write the TX FIFO.
   // (see diagrams/reg_TX_FIFO.png)
-  // Valid bits are from DATA_BITS:0, which are data.
-  localparam TX_FIFO_REG = 4'h4;
+  // Valid bits are from DATA_BITS:0, which are data. Multiply by 4 to get register offset on bus.
+  localparam TX_FIFO_REG = 4'h4 >> DIVISOR;
   // Register Address: STATUS_REG
-  // Defines the address offset to read the status bits.
+  // Defines the address offset to read the status bits. Multiply by 4 to get register offset on bus.
   // (see diagrams/reg_STATUS.png)
-  localparam STATUS_REG  = 4'h8;
+  localparam STATUS_REG  = 4'h8 >> DIVISOR;
   /* Register Bits: Status Register Bits
    *
    * PE           - 7, Parity error, active high on error
@@ -141,10 +145,10 @@ module up_uart #(
    * rx_valid     - 0, When 1 the rx fifo contains valid data.
    */
   // Register Address: CONTROL_REG
-  // Defines the address offset to set the control bits.
+  // Defines the address offset to set the control bits. Multiply by 4 to get register offset on bus.
   // (see diagrams/reg_CONTROL.png)
   // See Also: <ENABLE_INTR_BIT>, <RESET_RX_BIT>, <RESET_TX_BIT>
-  localparam CONTROL_REG = 4'hC;
+  localparam CONTROL_REG = 4'hC >> DIVISOR;
   /* Register Bits: Control Register Bits
    *
    * ENABLE_INTR_BIT  - 4, Control Register offset bit for enabling the interrupt.
