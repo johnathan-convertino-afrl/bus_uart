@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("div",["Variable"],[["DIVISOR",,[["up_uart",,,,0,"File:up_uart.v:up_uart.DIVISOR","SystemVerilogModule:up_uart:DIVISOR"]]]]);

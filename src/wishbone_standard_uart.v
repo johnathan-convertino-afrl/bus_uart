@@ -1,5 +1,5 @@
 //******************************************************************************
-//  file:     wishbone_classic_uart.v
+//  file:     wishbone_standard_uart.v
 //
 //  author:   JAY CONVERTINO
 //
@@ -34,9 +34,9 @@
 `timescale 1ns/100ps
 
 /*
- * Module: wishbone_classic_uart
+ * Module: wishbone_standard_uart
  *
- * AXI Lite based uart device.
+ * Wishbone Standard based uart device.
  *
  * Parameters:
  *
@@ -72,7 +72,7 @@
  *   rts            - request to send is a loop with CTS
  *   cts            - clear to send is a loop with RTS
  */
-module wishbone_classic_uart #(
+module wishbone_standard_uart #(
     parameter ADDRESS_WIDTH     = 32,
     parameter BUS_WIDTH         = 4,
     parameter CLOCK_SPEED       = 100000000,
@@ -133,13 +133,13 @@ module wishbone_classic_uart #(
 
   //Group: Instantianted Modules
 
-  // Module: inst_up_wishbone_classic
+  // Module: inst_up_wishbone_standard
   //
-  // Module instance of up_wishbone_classic for the Wishbone Classic bus to the uP bus.
-  up_wishbone_classic #(
+  // Module instance of up_wishbone_standard for the Wishbone Classic Standard bus to the uP bus.
+  up_wishbone_standard #(
     .ADDRESS_WIDTH(ADDRESS_WIDTH),
     .BUS_WIDTH(BUS_WIDTH)
-  ) inst_up_wishbone_classic (
+  ) inst_up_wishbone_standard (
     .clk(clk),
     .rst(rst),
     .s_wb_cyc(s_wb_cyc),

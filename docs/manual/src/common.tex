@@ -28,7 +28,7 @@
 
 \par
 BUS UART is a core for interfacing over RS232 UART to a bus of choice. The core will process data to and from the UART.
-The data can then be accessed over a BUS, currently AXI lite or Wishbone Classic, and processed as needed. All input and output
+The data can then be accessed over a BUS, currently AXI lite or Wishbone Standard, and processed as needed. All input and output
 over the bus goes into FIFOs that is then tied to the AXIS UART core. The following is information on how to use the device
 in an FPGA, software, and in simulation.
 
@@ -45,7 +45,7 @@ The following are the dependencies of the cores.
 
 \input{src/fusesoc/depend_axi_lite_uart.tex}
 
-\input{src/fusesoc/depend_wishbone_classic_uart.tex}
+\input{src/fusesoc/depend_wishbone_standard_uart.tex}
 
 \input{src/fusesoc/depend_up_uart.tex}
 
@@ -61,7 +61,7 @@ This core is made up of other cores that are documented in detail in there sourc
   \item \textbf{axis\_uart} Interface with UART and present the data over AXIS interface (see core for documentation).
   \item \textbf{fifo} Used for RX and TX FIFO instances. Set to 16 words buffer max (see core for documentation).
   \item \textbf{up\_axi} An AXI Lite to uP converter core (see core for documentation).
-  \item \textbf{up\_wishbone\_classic} A wishbone classic to uP converter core (see core for documentation).
+  \item \textbf{up\_wishbone\_standard} A wishbone standard to uP converter core (see core for documentation).
   \item \textbf{up\_uart} Takes uP bus and coverts it to interface with the RX/TX FIFOs and the AXIS UART (see module documentation for information \ref{Module Documentation}).
 \end{itemize}
 
@@ -83,7 +83,7 @@ a system and should be integrated into a fusesoc based system. Simulations are s
 
 \input{src/fusesoc/files_axi_lite_uart.tex}
 
-\input{src/fusesoc/files_wishbone_classic_uart.tex}
+\input{src/fusesoc/files_wishbone_standard_uart.tex}
 
 \input{src/fusesoc/files_up_uart.tex}
 
@@ -91,7 +91,7 @@ a system and should be integrated into a fusesoc based system. Simulations are s
 
 \input{src/fusesoc/targets_axi_lite_uart.tex}
 
-\input{src/fusesoc/targets_wishbone_classic_uart.tex}
+\input{src/fusesoc/targets_wishbone_standard_uart.tex}
 
 \input{src/fusesoc/targets_up_uart.tex}
 
@@ -142,8 +142,8 @@ axi\_lite\_uart module adds a AXI Lite to uP (microprocessor) bus converter. The
 from Analog Devices.
 
 \par
-wishbone\_classic\_uart module adds a Wishbone Classic to uP (microprocessor) bus converter. This
-converter was designed for Wishbone Classic only, NOT pipelined.
+wishbone\_standard\_uart module adds a Wishbone Standard to uP (microprocessor) bus converter. This
+converter was designed for Wishbone Standard only, NOT pipelined.
 
 \vspace{15mm}
 \par

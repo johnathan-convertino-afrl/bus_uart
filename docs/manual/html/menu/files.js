@@ -1,1 +1,1 @@
-﻿NDMenu.OnSectionLoaded("files.js",[[1,"axi_lite_uart.v"],[1,"up_uart.v"],[1,"wishbone_classic_uart.v"]]);
+﻿NDMenu.OnSectionLoaded("files.js",[[1,"axi_lite_uart.v"],[1,"up_uart.v"],[1,"wishbone_standard_uart.v"]]);

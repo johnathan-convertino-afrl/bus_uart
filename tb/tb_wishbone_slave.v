@@ -133,7 +133,7 @@ module tb_wishbone_slave #(
   end
 
   //device under test
-  wishbone_classic_uart #(
+  wishbone_standard_uart #(
     .BAUD_CLOCK_SPEED(CLK_SPEED_HZ),
     .BAUD_RATE(115200),
     .PARITY_ENA(0),

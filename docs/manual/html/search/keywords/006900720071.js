@@ -1,1 +1,1 @@
-﻿NDSearch.OnPrefixDataLoaded("irq",["RegisterBit"],[["irq_en",,[["up_1553",,,,0,"File:up_uart.v:up_1553.irq_en","SystemVerilogModule:up_1553:irq_en"]]]]);
+﻿NDSearch.OnPrefixDataLoaded("irq",["RegisterBit"],[["irq_en",,[["up_uart",,,,0,"File:up_uart.v:up_uart.irq_en","SystemVerilogModule:up_uart:irq_en"]]]]);
