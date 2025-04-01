@@ -76,35 +76,6 @@ module tb_wishbone_slave #(
   localparam STATUS_REG  = 14'h8;
   localparam CONTROL_REG = 14'hC;
 
-  // //device under test
-  // up_wishbone #(
-  //   .WISHBONE_ADDRESS_WIDTH(16)
-  // ) dut (
-  //   //clk reset
-  //   .clk(tb_data_clk),
-  //   .rst(tb_rst),
-  //   //Wishbone
-  //   .s_wb_cyc(r_wb_cyc),
-  //   .s_wb_stb(r_wb_stb),
-  //   .s_wb_we(r_wb_we),
-  //   .s_wb_addr(r_wb_addr),
-  //   .s_wb_data_i(r_wb_data_o),
-  //   .s_wb_sel_i(r_wb_sel_o),
-  //   .s_wb_ack(tb_wb_ack),
-  //   .s_wb_data_o(tb_wb_data_i),
-  //   //uP
-  //   //read interface
-  //   .up_rreq(up_rreq),
-  //   .up_rack(r_up_rack),
-  //   .up_raddr(up_raddr),
-  //   .up_rdata(r_up_rdata),
-  //   //write interface
-  //   .up_wreq(up_wreq),
-  //   .up_wack(r_up_wack),
-  //   .up_waddr(up_waddr),
-  //   .up_wdata(up_wdata)
-  // );
-
   
   //axis clock
   always
@@ -184,8 +155,6 @@ module tb_wishbone_slave #(
     .s_wb_addr(r_wb_addr),
     .s_wb_data_i(r_wb_data_o),
     .s_wb_sel(r_wb_sel_o),
-    .s_wb_cti(3'b000),
-    .s_wb_bte(2'b00),
     .s_wb_ack(tb_wb_ack),
     .s_wb_data_o(tb_wb_data_i),
     //uart
