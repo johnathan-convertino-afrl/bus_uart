@@ -1,5 +1,5 @@
 #******************************************************************************
-# file:    tb_cocotb_up.py
+# file:    tb_cocotb_axi_lite.py
 #
 # author:  JAY CONVERTINO
 #
@@ -40,7 +40,7 @@ from cocotb.utils import get_sim_time
 from cocotb.triggers import FallingEdge, RisingEdge, Timer, Event
 from cocotb.binary import BinaryValue
 from cocotbext.mil_std_1553 import MILSTD1553Source, MILSTD1553Sink
-from cocotbext.up.ad import upMaster
+from cocotbext.axi import AxiLiteBus, AxiLiteMaster
 
 # Function: random_bool
 # Return a infinte cycle of random bools
@@ -61,18 +61,17 @@ def random_bool():
 #   dut - Device under test passed from cocotb test function
 def start_clock(dut):
   dut._log.info(f'CLOCK NS : {int(1000000000/dut.CLOCK_SPEED.value)}')
-  cocotb.start_soon(Clock(dut.clk, int(1000000000/dut.CLOCK_SPEED.value), units="ns").start())
+  cocotb.start_soon(Clock(dut.aclk, int(1000000000/dut.CLOCK_SPEED.value), units="ns").start())
 
 # Function: reset_dut
 # Cocotb coroutine for resets, used with await to make sure system is reset.
 async def reset_dut(dut):
-  dut.rstn.value = 0
-  await Timer(20, units="ns")
-  dut.rstn.value = 1
+  dut.arstn.value = 0
+  await Timer(5, units="ns")
+  dut.arstn.value = 1
 
 # Function: increment_test_cmd_send
 # Coroutine that is identified as a test routine. Setup up to send 1553 commands
-# ADDRESS MAP FOR uP: 0=0,4=1,8=2,C=3
 #
 # Parameters:
 #   dut - Device under test passed from cocotb.
@@ -81,7 +80,7 @@ async def increment_test_cmd_send(dut):
 
     start_clock(dut)
 
-    up_master = upMaster(dut, "up", dut.clk, dut.rstn)
+    axil_master = AxiLiteMaster(AxiLiteBus.from_prefix(dut, "s_axi"), dut.aclk, dut.arstn, False)
 
     milstd1553_sink = MILSTD1553Sink(dut.o_diff)
 
@@ -95,21 +94,17 @@ async def increment_test_cmd_send(dut):
 
         payload = status << 16 | data
 
-        await up_master.write(1, payload)
+        payload_bytes = payload.to_bytes(4, "little")
 
-        await Timer(30, units="ns")
-
-        status_reg = await up_master.read(2)
+        await axil_master.write(4, payload_bytes)
 
         rx_data = await milstd1553_sink.read_cmd()
 
-        assert int.from_bytes(rx_data, byteorder="little") == x, "SENT COMMAND OVER UP DOES NOT MATCH RECEIVED DATA"
-        assert (status_reg >> 2) & 1 == 0, "TX FIFO IS EMPTY AFTER WRITE"
+        assert int.from_bytes(rx_data, "little") == x, "SENT COMMAND OVER UP DOES NOT MATCH RECEIVED DATA"
 
 
 # Function: increment_test_cmd_recv
 # Coroutine that is identified as a test routine. Setup up to recv 1553 commands
-# ADDRESS MAP FOR uP: 0=0,4=1,8=2,C=3
 #
 # Parameters:
 #   dut - Device under test passed from cocotb.
@@ -118,11 +113,11 @@ async def increment_test_cmd_recv(dut):
 
     start_clock(dut)
 
-    up_master = upMaster(dut, "up", dut.clk, dut.rstn)
+    await reset_dut(dut)
+
+    axil_master = AxiLiteMaster(AxiLiteBus.from_prefix(dut, "s_axi"), dut.aclk, dut.arstn, False)
 
     milstd1553_source = MILSTD1553Source(dut.i_diff)
-
-    await reset_dut(dut)
 
     for x in range(0, 2**8):
 
@@ -130,18 +125,17 @@ async def increment_test_cmd_recv(dut):
 
         await milstd1553_source.write_cmd(data)
 
-        status_reg = await up_master.read(2)
+        status_reg = await axil_master.read(8, 4)
 
-        rx_data = await up_master.read(0)
+        rx_data = await axil_master.read(0, 4)
 
-        assert rx_data & 0x0000FFFF == x, "RECEIVED COMMAND OVER UP DOES NOT MATCH SOURCE DATA"
-        assert (rx_data >> 16) & 0xFF == 0b10000001, "RECEIVED DATA IS NOT A COMMAND OR PARITY FAILED"
-        assert (status_reg >> 7) & 1 == 1, "PARITY CHECK FAILED"
-        assert status_reg & 1 == 1, "RECEIVED DATA IS NOT VALID"
+        assert int.from_bytes(rx_data.data, "little") & 0x0000FFFF == x, "RECEIVED COMMAND OVER UP DOES NOT MATCH SOURCE DATA"
+        assert (int.from_bytes(rx_data.data, "little") >> 16) & 0xFF == 0b10000001, "RECEIVED DATA IS NOT A COMMAND OR PARITY FAILED"
+        assert (int.from_bytes(status_reg.data, "little") >> 7) & 1 == 1, "PARITY CHECK FAILED"
+        assert int.from_bytes(status_reg.data, "little") & 1 == 1, "RECEIVED DATA IS NOT VALID"
 
 # Function: increment_test_data_send
 # Coroutine that is identified as a test routine. Setup up to send 1553 data
-# ADDRESS MAP FOR uP: 0=0,4=1,8=2,C=3
 #
 # Parameters:
 #   dut - Device under test passed from cocotb.
@@ -150,35 +144,31 @@ async def increment_test_data_send(dut):
 
     start_clock(dut)
 
-    up_master = upMaster(dut, "up", dut.clk, dut.rstn)
+    await reset_dut(dut)
+
+    axil_master = AxiLiteMaster(AxiLiteBus.from_prefix(dut, "s_axi"), dut.aclk, dut.arstn, False)
 
     milstd1553_sink = MILSTD1553Sink(dut.o_diff)
 
-    await reset_dut(dut)
-
     for x in range(0, 2**8):
-        # see bus_1553.pdf STATUS_DATA for TX_FIFO reg
+
         status = 0b01000001
 
         data = x
 
         payload = status << 16 | data
 
-        await up_master.write(1, payload)
+        payload_bytes = payload.to_bytes(4, "little")
 
-        await Timer(30, units="ns")
-
-        status_reg = await up_master.read(2)
+        await axil_master.write(4, payload_bytes)
 
         rx_data = await milstd1553_sink.read_data()
 
-        assert int.from_bytes(rx_data, byteorder="little") == x, "SENT DATA OVER UP DOES NOT MATCH RECEIVED DATA"
-        assert (status_reg >> 2) & 1 == 0, "TX FIFO IS EMPTY AFTER WRITE"
+        assert int.from_bytes(rx_data, "little") == x, "SENT DATA OVER UP DOES NOT MATCH RECEIVED DATA"
 
 
 # Function: increment_test_data_recv
 # Coroutine that is identified as a test routine. Setup up to recv 1553 data
-# ADDRESS MAP FOR uP: 0=0,4=1,8=2,C=3
 #
 # Parameters:
 #   dut - Device under test passed from cocotb.
@@ -187,11 +177,11 @@ async def increment_test_data_recv(dut):
 
     start_clock(dut)
 
-    up_master = upMaster(dut, "up", dut.clk, dut.rstn)
+    await reset_dut(dut)
+
+    axil_master = AxiLiteMaster(AxiLiteBus.from_prefix(dut, "s_axi"), dut.aclk, dut.arstn, False)
 
     milstd1553_source = MILSTD1553Source(dut.i_diff)
-
-    await reset_dut(dut)
 
     for x in range(0, 2**8):
 
@@ -199,14 +189,14 @@ async def increment_test_data_recv(dut):
 
         await milstd1553_source.write_data(data)
 
-        status_reg = await up_master.read(2)
+        status_reg = await axil_master.read(8, 4)
 
-        rx_data = await up_master.read(0)
+        rx_data = await axil_master.read(0, 4)
 
-        assert rx_data & 0x0000FFFF == x, "RECEIVED DATA OVER UP DOES NOT MATCH SOURCE DATA"
-        assert (rx_data >> 16) & 0xFF == 0b01000001, "RECEIVED DATA IS NOT A DATA SYNC OR PARITY FAILED"
-        assert (status_reg >> 7) & 1 == 1, "PARITY CHECK FAILED"
-        assert status_reg & 1 == 1, "RECEIVED DATA IS NOT VALID"
+        assert int.from_bytes(rx_data.data, "little") & 0x0000FFFF == x, "RECEIVED COMMAND OVER UP DOES NOT MATCH SOURCE DATA"
+        assert (int.from_bytes(rx_data.data, "little") >> 16) & 0xFF == 0b01000001, "RECEIVED DATA IS NOT A COMMAND OR PARITY FAILED"
+        assert (int.from_bytes(status_reg.data, "little") >> 7) & 1 == 1, "PARITY CHECK FAILED"
+        assert int.from_bytes(status_reg.data, "little") & 1 == 1, "RECEIVED DATA IS NOT VALID"
 
 # Function: in_reset
 # Coroutine that is identified as a test routine. This routine tests if device stays
@@ -219,12 +209,12 @@ async def in_reset(dut):
 
     start_clock(dut)
 
-    dut.rstn.value = 0
+    dut.arstn.value = 0
 
     await Timer(100, units="ns")
 
-    assert dut.up_wack.value.integer == 0, "uP WACK is 1!"
-    assert dut.up_rack.value.integer == 0, "uP RACK is 1!"
+    assert dut.s_axi_arready.value.integer == 0, "s_axi_aready is 1!"
+    assert dut.s_axi_wready.value.integer == 0, "s_axi_wready is 1!"
 
 # Function: no_clock
 # Coroutine that is identified as a test routine. This routine tests if no ready when clock is lost
@@ -235,9 +225,9 @@ async def in_reset(dut):
 @cocotb.test()
 async def no_clock(dut):
 
-    dut.rstn.value = 0
+    dut.arstn.value = 0
 
     await Timer(100, units="ns")
 
-    assert dut.up_wack.value.integer == 0, "uP WACK is 1!"
-    assert dut.up_rack.value.integer == 0, "uP RACK is 1!"
+    assert dut.s_axi_arready.value.integer == 0, "s_axi_aready is 1!"
+    assert dut.s_axi_wready.value.integer == 0, "s_axi_wready is 1!"

@@ -1,5 +1,5 @@
 # BUS UART
-### UART TO BUS (WISHBONE CLASSIC, AXI_LITE)
+### UART TO BUS (WISHBONE STANDARD, AXI_LITE)
 
 ![image](docs/manual/img/AFRL.png)
 
@@ -9,7 +9,7 @@
    
    date: 2024.03.11
    
-   details: Interface UART data at some baud to a AXI LITE or Wishbone interface bus, duplicates Xilinx UART Lite registers and behavior.
+   details: Interface UART data at some baud to a AXI LITE or Wishbone Standard interface bus, duplicates Xilinx UART Lite registers and behavior.
    
    license: MIT   
    
@@ -34,7 +34,7 @@
   - AFRL:utility:helper:1.0.0
   - AFRL:device_converter:axis_uart:1.0.0
   - AFRL:buffer:fifo
-  - AFRL:bus:up_wishbone_classic:1.0.0 (FOR WISHBONE)
+  - AFRL:bus:up_wishbone_standard:1.0.0 (FOR WISHBONE)
   - AD:common:up_axi:1.0.0 (FOR AXI LITE)
   
 #### Simulation
@@ -75,16 +75,21 @@
   
 #### TB
 
-* tb_up_uart.v
-* tb_wishbone_slave.v
-  
+* tb_cocotb_up.v
+* tb_cocotb_up.py
+* tb_cocotb_axi_lite.v
+* tb_cocotb_axi_lite.py
+* tb_cocotb_wishbone_standard.v
+* tb_cocotb_wishbone_standard.py
+
 ### FUSESOC
 
 * fusesoc_info.core created.
-* Simulation uses icarus to run data through the core.
+* Simulation uses cocotb with icarus to run data through the core.
 
 #### Targets
 
 * RUN WITH: (fusesoc run --target=sim VENDER:CORE:NAME:VERSION)
   - default (for IP integration builds)
-  - sim
+  - sim_cocotb
+

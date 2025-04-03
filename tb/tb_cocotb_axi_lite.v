@@ -1,5 +1,5 @@
 //******************************************************************************
-// file:    tb_cocotb_wishbone_standard.v
+// file:    tb_cocotb_axi_lite.v
 //
 // author:  JAY CONVERTINO
 //
@@ -36,12 +36,12 @@
 /*
  * Module: tb_cocotb
  *
- * Wishbone Stanard based 1553 communications device.
+ * AXI Lite slave to AXI Lite 1553 DUT
  *
  * Parameters:
  *
- *   ADDRESS_WIDTH   - Width of the address bus in bits, max 32 bit.
- *   BUS_WIDTH       - Width of the data bus in bytes.
+ *   ADDRESS_WIDTH   - Width of the axi address bus, max 32 bit.
+ *   BUS_WIDTH       - Width in bytes of the data bus.
  *   CLOCK_SPEED     - This is the aclk frequency in Hz
  *   SAMPLE_RATE     - Rate of in which to sample the 1553 bus. Must be 2 MHz or more and less than aclk. This is in Hz.
  *   BIT_SLICE_OFFSET- Adjust where the sample is taken from the input.
@@ -50,17 +50,27 @@
  *
  * Ports:
  *
- *   clk            - Clock for all devices in the core
- *   rst            - Positive reset
- *   s_wb_cyc       - Bus Cycle in process
- *   s_wb_stb       - Valid data transfer cycle
- *   s_wb_we        - Active High write, low read
- *   s_wb_addr      - Bus address
- *   s_wb_data_i    - Input data
- *   s_wb_sel       - Device Select
- *   s_wb_ack       - Bus transaction terminated
- *   s_wb_data_o    - Output data
- *   s_wb_err       - Active high when a bus error is present
+ *   aclk           - Clock for all devices in the core
+ *   arstn          - Negative reset
+ *   s_axi_awvalid  - Axi Lite aw valid
+ *   s_axi_awaddr   - Axi Lite aw addr
+ *   s_axi_awprot   - Axi Lite aw prot
+ *   s_axi_awready  - Axi Lite aw ready
+ *   s_axi_wvalid   - Axi Lite w valid
+ *   s_axi_wdata    - Axi Lite w data
+ *   s_axi_wstrb    - Axi Lite w strb
+ *   s_axi_wready   - Axi Lite w ready
+ *   s_axi_bvalid   - Axi Lite b valid
+ *   s_axi_bresp    - Axi Lite b resp
+ *   s_axi_bready   - Axi Lite b ready
+ *   s_axi_arvalid  - Axi Lite ar valid
+ *   s_axi_araddr   - Axi Lite ar addr
+ *   s_axi_arprot   - Axi Lite ar prot
+ *   s_axi_arready  - Axi Lite ar ready
+ *   s_axi_rvalid   - Axi Lite r valid
+ *   s_axi_rdata    - Axi Lite r data
+ *   s_axi_rresp    - Axi Lite r resp
+ *   s_axi_rready   - Axi Lite r ready
  *   i_diff         - Input differential signal for 1553 bus
  *   o_diff         - Output differential signal for 1553 bus
  *   en_o_diff      - Enable output of differential signal (for signal switching on 1553 module)
@@ -76,23 +86,32 @@ module tb_cocotb #(
     parameter SAMPLE_SELECT     = 0
   )
   (
-    input           clk,
-    input           rst,
-    input                       s_wb_cyc,
-    input                       s_wb_stb,
-    input                       s_wb_we,
-    input   [ADDRESS_WIDTH-1:0] s_wb_addr,
-    input   [BUS_WIDTH*8-1:0]   s_wb_data_i,
-    input   [BUS_WIDTH-1:0]     s_wb_sel,
-    output                      s_wb_ack,
-    output  [BUS_WIDTH*8-1:0]   s_wb_data_o,
-    output                      s_wb_err,
+    input                       aclk,
+    input                       arstn,
+    input                       s_axi_awvalid,
+    input   [ADDRESS_WIDTH-1:0] s_axi_awaddr,
+    input   [ 2:0]              s_axi_awprot,
+    output                      s_axi_awready,
+    input                       s_axi_wvalid,
+    input   [BUS_WIDTH*8-1:0]   s_axi_wdata,
+    input   [ 3:0]              s_axi_wstrb,
+    output                      s_axi_wready,
+    output                      s_axi_bvalid,
+    output  [ 1:0]              s_axi_bresp,
+    input                       s_axi_bready,
+    input                       s_axi_arvalid,
+    input   [ADDRESS_WIDTH-1:0] s_axi_araddr,
+    input   [ 2:0]              s_axi_arprot,
+    output                      s_axi_arready,
+    output                      s_axi_rvalid,
+    output  [BUS_WIDTH*8-1:0]   s_axi_rdata,
+    output  [ 1:0]              s_axi_rresp,
+    input                       s_axi_rready,
     input   [1:0]               i_diff,
     output  [1:0]               o_diff,
     output                      en_o_diff,
     output                      irq
   );
-
   // fst dump command
   initial begin
     $dumpfile ("tb_cocotb.fst");
@@ -105,28 +124,38 @@ module tb_cocotb #(
   /*
    * Module: dut
    *
-   * Device under test, wishbone_standard_1553
+   * Device under test, axi_lite_1553
    */
-  wishbone_standard_1553 #(
-    .ADDRESS_WIDTH(ADDRESS_WIDTH),
-    .BUS_WIDTH(BUS_WIDTH),
-    .CLOCK_SPEED(CLOCK_SPEED),
-    .SAMPLE_RATE(SAMPLE_RATE),
-    .BIT_SLICE_OFFSET(BIT_SLICE_OFFSET),
-    .INVERT_DATA(INVERT_DATA),
-    .SAMPLE_SELECT(SAMPLE_SELECT)
+  axi_lite_1553 #(
+    .ADDRESS_WIDTH(),
+    .BUS_WIDTH(),
+    .CLOCK_SPEED(),
+    .SAMPLE_RATE(),
+    .BIT_SLICE_OFFSET(),
+    .INVERT_DATA(),
+    .SAMPLE_SELECT()
   ) dut (
-    .clk(clk),
-    .rst(rst),
-    .s_wb_cyc(s_wb_cyc),
-    .s_wb_stb(s_wb_stb),
-    .s_wb_we(s_wb_we),
-    .s_wb_addr(s_wb_addr),
-    .s_wb_data_i(s_wb_data_i),
-    .s_wb_sel(s_wb_sel),
-    .s_wb_ack(s_wb_ack),
-    .s_wb_data_o(s_wb_data_o),
-    .s_wb_err(s_wb_err),
+    .aclk(aclk),
+    .arstn(arstn),
+    .s_axi_awvalid(s_axi_awvalid),
+    .s_axi_awaddr(s_axi_awaddr),
+    .s_axi_awprot(s_axi_awprot),
+    .s_axi_awready(s_axi_awready),
+    .s_axi_wvalid(s_axi_wvalid),
+    .s_axi_wdata(s_axi_wdata),
+    .s_axi_wstrb(s_axi_wstrb),
+    .s_axi_wready(s_axi_wready),
+    .s_axi_bvalid(s_axi_bvalid),
+    .s_axi_bresp(s_axi_bresp),
+    .s_axi_bready(s_axi_bready),
+    .s_axi_arvalid(s_axi_arvalid),
+    .s_axi_araddr(s_axi_araddr),
+    .s_axi_arprot(s_axi_arprot),
+    .s_axi_arready(s_axi_arready),
+    .s_axi_rvalid(s_axi_rvalid),
+    .s_axi_rdata(s_axi_rdata),
+    .s_axi_rresp(s_axi_rresp),
+    .s_axi_rready(s_axi_rready),
     .i_diff(i_diff),
     .o_diff(o_diff),
     .en_o_diff(en_o_diff),
