@@ -120,25 +120,25 @@ There are a few different simulations that can be run for this core.
 
 \subsection{cocotb}
 \par
-Cocotb is the only method for simulating the various interations of the bus\_1553 core. At the moment there is a
+Cocotb is the only method for simulating the various interations of the bus\_UART core. At the moment there is a
 axi\_lite, wishbone\_standard, and uP based versions. This is currently set to use icarus as the sim tool for cocotb.
 
 \par
 To run the wishbone sim use the command below.
 \begin{lstlisting}[language=bash]
-fusesoc run --target sim_cocotb AFRL:device:wishbone_standard_1553:1.0.0
+fusesoc run --target sim_cocotb AFRL:device:wishbone_standard_uart:1.0.0
 \end{lstlisting}
 
 \par
 To run the axi\_lite sim use the command below.
 \begin{lstlisting}[language=bash]
-fusesoc run --target sim_cocotb AFRL:device:axi_lite_1553:1.0.0
+fusesoc run --target sim_cocotb AFRL:device:axi_lite_uart:1.0.0
 \end{lstlisting}
 
 \par
 To run the uP sim use the command below.
 \begin{lstlisting}[language=bash]
-fusesoc run --target sim_cocotb AFRL:device:up_1553:1.0.0
+fusesoc run --target sim_cocotb AFRL:device:up_uart:1.0.0
 \end{lstlisting}
 
 

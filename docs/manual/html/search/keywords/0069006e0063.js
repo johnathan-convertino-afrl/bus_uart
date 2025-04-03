@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("inc",["Function"],[["increment_test_uart_rx",,[[,,,,0,"File2:tb_cocotb_axi_lite.py:increment_test_uart_rx"]]],["increment_test_uart_tx",,[[,,,,0,"File2:tb_cocotb_axi_lite.py:increment_test_uart_tx"]]]]);
