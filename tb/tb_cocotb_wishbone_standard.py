@@ -39,7 +39,7 @@ from cocotb.clock import Clock
 from cocotb.utils import get_sim_time
 from cocotb.triggers import FallingEdge, RisingEdge, Timer, Event
 from cocotb.binary import BinaryValue
-from cocotbext.mil_std_1553 import MILSTD1553Source, MILSTD1553Sink
+from cocotbext.uart import UartSource, UartSink
 from cocotbext.wishbone.standard import wishboneStandardMaster
 
 # Function: random_bool
@@ -60,7 +60,6 @@ def random_bool():
 # Parameters:
 #   dut - Device under test passed from cocotb test function
 def start_clock(dut):
-  dut._log.info(f'CLOCK NS : {int(1000000000/dut.CLOCK_SPEED.value)}')
   cocotb.start_soon(Clock(dut.clk, int(1000000000/dut.CLOCK_SPEED.value), units="ns").start())
 
 # Function: reset_dut
@@ -70,128 +69,59 @@ async def reset_dut(dut):
   await Timer(20, units="ns")
   dut.rst.value = 0
 
-# Function: increment_test_cmd_send
-# Coroutine that is identified as a test routine. Setup up to send 1553 commands
+# Function: increment_test_uart_tx
+# Coroutine that is identified as a test routine. Setup up to tx uart data.
 #
 # Parameters:
 #   dut - Device under test passed from cocotb.
 @cocotb.test()
-async def increment_test_cmd_send(dut):
+async def increment_test_uart_tx(dut):
 
     start_clock(dut)
 
     wishbone_master = wishboneStandardMaster(dut, "s_wb", dut.clk, dut.rst)
 
-    milstd1553_sink = MILSTD1553Sink(dut.o_diff)
+    uart_sink = UartSink(dut.tx, baud=dut.BAUD_RATE.value, bits=dut.DATA_BITS.value, stop_bits=dut.STOP_BITS.value)
 
     await reset_dut(dut)
 
     for x in range(0, 2**8):
 
-        status = 0b10000001
+        await wishbone_master.write(4, x)
 
-        data = x
+        rx_data = await uart_sink.read()
 
-        payload = status << 16 | data
-
-        await wishbone_master.write(4, payload)
-
-        rx_data = await milstd1553_sink.read_cmd()
-
-        assert int.from_bytes(rx_data, "little") == x, "SENT COMMAND OVER UP DOES NOT MATCH RECEIVED DATA"
+        assert int.from_bytes(rx_data, "little") == x, "SENT DATA OVER DOES NOT MATCH RECEIVED DATA"
 
 
-# Function: increment_test_cmd_recv
-# Coroutine that is identified as a test routine. Setup up to recv 1553 commands
+# Function: increment_test_uart_rx
+# Coroutine that is identified as a test routine. Setup up to rx uart data
 #
 # Parameters:
 #   dut - Device under test passed from cocotb.
 @cocotb.test()
-async def increment_test_cmd_recv(dut):
+async def increment_test_uart_rx(dut):
 
     start_clock(dut)
 
-    await reset_dut(dut)
-
     wishbone_master = wishboneStandardMaster(dut, "s_wb", dut.clk, dut.rst)
 
-    milstd1553_source = MILSTD1553Source(dut.i_diff)
+    uart_source = UartSource(dut.rx, baud=dut.BAUD_RATE.value, bits=dut.DATA_BITS.value, stop_bits=dut.STOP_BITS.value)
+
+    await reset_dut(dut)
 
     for x in range(0, 2**8):
 
-        data = x.to_bytes(2, byteorder="little")
+        data = x.to_bytes(1, byteorder="little")
 
-        await milstd1553_source.write_cmd(data)
+        await uart_source.write(data)
 
         status_reg = await wishbone_master.read(8)
 
         rx_data = await wishbone_master.read(0)
 
-        assert rx_data & 0x0000FFFF == x, "RECEIVED COMMAND OVER UP DOES NOT MATCH SOURCE DATA"
-        assert (rx_data >> 16) & 0xFF == 0b10000001, "RECEIVED DATA IS NOT A COMMAND OR PARITY FAILED"
-        assert (status_reg >> 7) & 1 == 1, "PARITY CHECK FAILED"
-        assert status_reg & 1 == 1, "RECEIVED DATA IS NOT VALID"
-
-# Function: increment_test_data_send
-# Coroutine that is identified as a test routine. Setup up to send 1553 data
-#
-# Parameters:
-#   dut - Device under test passed from cocotb.
-@cocotb.test()
-async def increment_test_data_send(dut):
-
-    start_clock(dut)
-
-    await reset_dut(dut)
-
-    wishbone_master = wishboneStandardMaster(dut, "s_wb", dut.clk, dut.rst)
-
-    milstd1553_sink = MILSTD1553Sink(dut.o_diff)
-
-    for x in range(0, 2**8):
-
-        status = 0b01000001
-
-        data = x
-
-        payload = status << 16 | data
-
-        await wishbone_master.write(4, payload)
-
-        rx_data = await milstd1553_sink.read_data()
-
-        assert int.from_bytes(rx_data, "little") == x, "SENT DATA OVER UP DOES NOT MATCH RECEIVED DATA"
-
-
-# Function: increment_test_data_recv
-# Coroutine that is identified as a test routine. Setup up to recv 1553 data
-#
-# Parameters:
-#   dut - Device under test passed from cocotb.
-@cocotb.test()
-async def increment_test_data_recv(dut):
-
-    start_clock(dut)
-
-    await reset_dut(dut)
-
-    wishbone_master = wishboneStandardMaster(dut, "s_wb", dut.clk, dut.rst)
-
-    milstd1553_source = MILSTD1553Source(dut.i_diff)
-
-    for x in range(0, 2**8):
-
-        data = x.to_bytes(2, byteorder="little")
-
-        await milstd1553_source.write_data(data)
-
-        status_reg = await wishbone_master.read(8)
-
-        rx_data = await wishbone_master.read(0)
-
-        assert rx_data & 0x0000FFFF == x, "RECEIVED COMMAND OVER UP DOES NOT MATCH SOURCE DATA"
-        assert (rx_data >> 16) & 0xFF == 0b01000001, "RECEIVED DATA IS NOT A COMMAND OR PARITY FAILED"
-        assert (status_reg >> 7) & 1 == 1, "PARITY CHECK FAILED"
+        assert rx_data & 0x000000FF == x, "RECEIVED COMMAND OVER UP DOES NOT MATCH SOURCE DATA"
+        assert (status_reg >> 7) & 1 == 0, "PARITY CHECK FAILED"
         assert status_reg & 1 == 1, "RECEIVED DATA IS NOT VALID"
 
 # Function: in_reset
