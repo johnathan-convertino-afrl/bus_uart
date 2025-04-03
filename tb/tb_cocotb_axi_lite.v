@@ -36,17 +36,22 @@
 /*
  * Module: tb_cocotb
  *
- * AXI Lite slave to AXI Lite 1553 DUT
+ * AXI Lite based uart device.
  *
  * Parameters:
  *
- *   ADDRESS_WIDTH   - Width of the axi address bus, max 32 bit.
- *   BUS_WIDTH       - Width in bytes of the data bus.
+ *   ADDRESS_WIDTH   - Width of the axi address bus
+ *   BUS_WIDTH       - Number of bytes for the data bus.
  *   CLOCK_SPEED     - This is the aclk frequency in Hz
- *   SAMPLE_RATE     - Rate of in which to sample the 1553 bus. Must be 2 MHz or more and less than aclk. This is in Hz.
- *   BIT_SLICE_OFFSET- Adjust where the sample is taken from the input.
- *   INVERT_DATA     - Invert all 1553 bits coming in and out.
- *   SAMPLE_SELECT   - Adjust where in the array of samples to select a bit.
+ *   BAUD_RATE       - Serial Baud, this can be any value including non-standard.
+ *   PARITY_ENA      - Enable Parity for the data in and out.
+ *   PARITY_TYPE     - Set the parity type, 0 = even, 1 = odd, 2 = mark, 3 = space.
+ *   STOP_BITS       - Number of stop bits, 0 to crazy non-standard amounts.
+ *   DATA_BITS       - Number of data bits, 1 to crazy non-standard amounts.
+ *   RX_DELAY        - Delay in rx data input.
+ *   RX_BAUD_DELAY   - Delay in rx baud enable. This will delay when we sample a bit (default is midpoint when rx delay is 0).
+ *   TX_DELAY        - Delay in tx data output. Delays the time to output of the data.
+ *   TX_BAUD_DELAY   - Delay in tx baud enable. This will delay the time the bit output starts.
  *
  * Ports:
  *
@@ -71,19 +76,25 @@
  *   s_axi_rdata    - Axi Lite r data
  *   s_axi_rresp    - Axi Lite r resp
  *   s_axi_rready   - Axi Lite r ready
- *   i_diff         - Input differential signal for 1553 bus
- *   o_diff         - Output differential signal for 1553 bus
- *   en_o_diff      - Enable output of differential signal (for signal switching on 1553 module)
  *   irq            - Interrupt when data is received
+ *   tx             - transmit for UART (output to RX)
+ *   rx             - receive for UART (input from TX)
+ *   rts            - request to send is a loop with CTS
+ *   cts            - clear to send is a loop with RTS
  */
 module tb_cocotb #(
     parameter ADDRESS_WIDTH     = 32,
     parameter BUS_WIDTH         = 4,
     parameter CLOCK_SPEED       = 100000000,
-    parameter SAMPLE_RATE       = 2000000,
-    parameter BIT_SLICE_OFFSET  = 0,
-    parameter INVERT_DATA       = 0,
-    parameter SAMPLE_SELECT     = 0
+    parameter BAUD_RATE         = 115200,
+    parameter PARITY_ENA        = 0,
+    parameter PARITY_TYPE       = 0,
+    parameter STOP_BITS         = 1,
+    parameter DATA_BITS         = 8,
+    parameter RX_DELAY          = 0,
+    parameter RX_BAUD_DELAY     = 0,
+    parameter TX_DELAY          = 0,
+    parameter TX_BAUD_DELAY     = 0
   )
   (
     input                       aclk,
@@ -93,7 +104,7 @@ module tb_cocotb #(
     input   [ 2:0]              s_axi_awprot,
     output                      s_axi_awready,
     input                       s_axi_wvalid,
-    input   [BUS_WIDTH*8-1:0]   s_axi_wdata,
+    input   [(BUS_WIDTH*8)-1:0] s_axi_wdata,
     input   [ 3:0]              s_axi_wstrb,
     output                      s_axi_wready,
     output                      s_axi_bvalid,
@@ -104,13 +115,14 @@ module tb_cocotb #(
     input   [ 2:0]              s_axi_arprot,
     output                      s_axi_arready,
     output                      s_axi_rvalid,
-    output  [BUS_WIDTH*8-1:0]   s_axi_rdata,
+    output  [(BUS_WIDTH*8)-1:0] s_axi_rdata,
     output  [ 1:0]              s_axi_rresp,
     input                       s_axi_rready,
-    input   [1:0]               i_diff,
-    output  [1:0]               o_diff,
-    output                      en_o_diff,
-    output                      irq
+    output                      irq,
+    output                      tx,
+    input                       rx,
+    output                      rts,
+    input                       cts
   );
   // fst dump command
   initial begin
@@ -124,16 +136,21 @@ module tb_cocotb #(
   /*
    * Module: dut
    *
-   * Device under test, axi_lite_1553
+   * Device under test, axi_lite_uart
    */
-  axi_lite_1553 #(
-    .ADDRESS_WIDTH(),
-    .BUS_WIDTH(),
-    .CLOCK_SPEED(),
-    .SAMPLE_RATE(),
-    .BIT_SLICE_OFFSET(),
-    .INVERT_DATA(),
-    .SAMPLE_SELECT()
+  axi_lite_uart #(
+    .ADDRESS_WIDTH(ADDRESS_WIDTH),
+    .BUS_WIDTH(BUS_WIDTH),
+    .CLOCK_SPEED(CLOCK_SPEED),
+    .BAUD_RATE(BAUD_RATE),
+    .PARITY_ENA(PARITY_ENA),
+    .PARITY_TYPE(PARITY_TYPE),
+    .STOP_BITS(STOP_BITS),
+    .DATA_BITS(DATA_BITS),
+    .RX_DELAY(RX_DELAY),
+    .RX_BAUD_DELAY(RX_BAUD_DELAY),
+    .TX_DELAY(TX_DELAY),
+    .TX_BAUD_DELAY(TX_BAUD_DELAY)
   ) dut (
     .aclk(aclk),
     .arstn(arstn),
@@ -156,10 +173,11 @@ module tb_cocotb #(
     .s_axi_rdata(s_axi_rdata),
     .s_axi_rresp(s_axi_rresp),
     .s_axi_rready(s_axi_rready),
-    .i_diff(i_diff),
-    .o_diff(o_diff),
-    .en_o_diff(en_o_diff),
-    .irq(irq)
+    .irq(irq),
+    .tx(tx),
+    .rx(rx),
+    .rts(rts),
+    .cts(cts)
   );
   
 endmodule

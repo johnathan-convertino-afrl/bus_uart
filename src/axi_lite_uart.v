@@ -40,6 +40,7 @@
  * Parameters:
  *
  *   ADDRESS_WIDTH   - Width of the axi address bus
+ *   BUS_WIDTH       - Number of bytes for the data bus
  *   CLOCK_SPEED     - This is the aclk frequency in Hz
  *   BAUD_RATE       - Serial Baud, this can be any value including non-standard.
  *   PARITY_ENA      - Enable Parity for the data in and out.
@@ -82,6 +83,7 @@
  */
 module axi_lite_uart #(
     parameter ADDRESS_WIDTH     = 32,
+    parameter BUS_WIDTH         = 4,
     parameter CLOCK_SPEED       = 100000000,
     parameter BAUD_RATE         = 115200,
     parameter PARITY_ENA        = 0,
@@ -96,14 +98,12 @@ module axi_lite_uart #(
   (
     input                       aclk,
     input                       arstn,
-    input                       s_axi_aclk,
-    input                       s_axi_aresetn,
     input                       s_axi_awvalid,
     input   [ADDRESS_WIDTH-1:0] s_axi_awaddr,
     input   [ 2:0]              s_axi_awprot,
     output                      s_axi_awready,
     input                       s_axi_wvalid,
-    input   [31:0]              s_axi_wdata,
+    input   [(BUS_WIDTH*8)-1:0] s_axi_wdata,
     input   [ 3:0]              s_axi_wstrb,
     output                      s_axi_wready,
     output                      s_axi_bvalid,
@@ -114,7 +114,7 @@ module axi_lite_uart #(
     input   [ 2:0]              s_axi_arprot,
     output                      s_axi_arready,
     output                      s_axi_rvalid,
-    output  [31:0]              s_axi_rdata,
+    output  [(BUS_WIDTH*8)-1:0] s_axi_rdata,
     output  [ 1:0]              s_axi_rresp,
     input                       s_axi_rready,
     output                      irq,
@@ -192,6 +192,7 @@ module axi_lite_uart #(
   // Module instance of up_uart creating a Logic wrapper for uart axis bus cores to interface with uP bus.
   up_uart #(
     .ADDRESS_WIDTH(ADDRESS_WIDTH),
+    .BUS_WIDTH(BUS_WIDTH),
     .CLOCK_SPEED(CLOCK_SPEED),
     .BAUD_RATE(BAUD_RATE),
     .PARITY_ENA(PARITY_ENA),
