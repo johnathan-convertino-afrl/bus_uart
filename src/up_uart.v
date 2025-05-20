@@ -122,15 +122,15 @@ module up_uart #(
   // Register Address: RX_FIFO_REG
   // Defines the address offset for RX FIFO
   // (see diagrams/reg_RX_FIFO.png)
-  // Valid bits are from DATA_BITS:0, which are data. Multiply by 4 to get register offset on bus.
+  // Valid bits are from DATA_BITS:0, which are data.
   localparam RX_FIFO_REG = 4'h0 >> DIVISOR;
   // Register Address: TX_FIFO_REG
   // Defines the address offset to write the TX FIFO.
   // (see diagrams/reg_TX_FIFO.png)
-  // Valid bits are from DATA_BITS:0, which are data. Multiply by 4 to get register offset on bus.
+  // Valid bits are from DATA_BITS:0, which are data.
   localparam TX_FIFO_REG = 4'h4 >> DIVISOR;
   // Register Address: STATUS_REG
-  // Defines the address offset to read the status bits. Multiply by 4 to get register offset on bus.
+  // Defines the address offset to read the status bits.
   // (see diagrams/reg_STATUS.png)
   localparam STATUS_REG  = 4'h8 >> DIVISOR;
   /* Register Bits: Status Register Bits
@@ -145,7 +145,7 @@ module up_uart #(
    * rx_valid     - 0, When 1 the rx fifo contains valid data.
    */
   // Register Address: CONTROL_REG
-  // Defines the address offset to set the control bits. Multiply by 4 to get register offset on bus.
+  // Defines the address offset to set the control bits.
   // (see diagrams/reg_CONTROL.png)
   // See Also: <ENABLE_INTR_BIT>, <RESET_RX_BIT>, <RESET_TX_BIT>
   localparam CONTROL_REG = 4'hC >> DIVISOR;
@@ -173,7 +173,7 @@ module up_uart #(
   reg                       r_tx_wen;
 
   //uart rx
-  wire [DATA_BITS-1:0]      m_axis_tdata;
+  wire [(BUS_WIDTH*8)-1:0]  m_axis_tdata;
   wire                      m_axis_tvalid;
   wire                      rx_full;
   wire [(BUS_WIDTH*8)-1:0]  rx_rdata;
@@ -330,13 +330,14 @@ module up_uart #(
     .RX_DELAY(RX_DELAY),
     .RX_BAUD_DELAY(RX_BAUD_DELAY),
     .TX_DELAY(TX_DELAY),
-    .TX_BAUD_DELAY(TX_BAUD_DELAY)
+    .TX_BAUD_DELAY(TX_BAUD_DELAY),
+    .BUS_WIDTH(BUS_WIDTH)
   ) inst_axis_uart (
     .aclk(clk),
     .arstn(rstn),
     .parity_err(s_parity_err),
     .frame_err(s_frame_err),
-    .s_axis_tdata(tx_rdata[DATA_BITS-1:0]),
+    .s_axis_tdata(tx_rdata),
     .s_axis_tvalid(tx_valid),
     .s_axis_tready(s_axis_tready),
     .m_axis_tdata(m_axis_tdata),
@@ -379,7 +380,7 @@ module up_uart #(
     .wr_rstn(rstn & r_rstn_rx_delay[0]),
     .wr_en(m_axis_tvalid),
     .wr_ack(),
-    .wr_data({{(BUS_WIDTH*8-DATA_BITS){1'b0}}, m_axis_tdata}),
+    .wr_data(m_axis_tdata),
     .wr_full(rx_full),
     .data_count_clk(clk),
     .data_count_rstn(rstn & r_rstn_rx_delay[0]),

@@ -17,7 +17,7 @@ filesets:
   dep:
     depend:
       - AFRL:utility:helper:1.0.0
-      - AFRL:device_converter:axis_uart:1.0.0
+      - AFRL:device_converter:axis_uart:1.5.0
       - AFRL:buffer:fifo
     
 targets:
