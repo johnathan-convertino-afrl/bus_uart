@@ -5,14 +5,19 @@
 
 ---
 
-   author: Jay Convertino   
+  author: Jay Convertino   
+  
+  date: 2024.03.11
+  
+  details: Interface UART data at some baud to a AXI LITE or Wishbone Standard interface bus, duplicates Xilinx UART Lite registers and behavior.
+  
+  license: MIT   
    
-   date: 2024.03.11
-   
-   details: Interface UART data at some baud to a AXI LITE or Wishbone Standard interface bus, duplicates Xilinx UART Lite registers and behavior.
-   
-   license: MIT   
-   
+  Actions:  
+
+  [![Lint Status](../../actions/workflows/lint.yml/badge.svg)](../../actions)  
+  [![Manual Status](../../actions/workflows/manual.yml/badge.svg)](../../actions)  
+  
 ---
 
 ### Version
@@ -27,19 +32,6 @@
 
   - [bus_uart.pdf](docs/manual/bus_uart.pdf)
   - [github page](https://johnathan-convertino-afrl.github.io/bus_uart/)
-
-### DEPENDENCIES
-#### Build
-
-  - AFRL:utility:helper:1.0.0
-  - AFRL:device_converter:axis_uart:1.0.0
-  - AFRL:buffer:fifo
-  - AFRL:bus:up_wishbone_standard:1.0.0 (FOR WISHBONE)
-  - AD:common:up_axi:1.0.0 (FOR AXI LITE)
-  
-#### Simulation
-
-  - AFRL:simulation:axis_stimulator
 
 ### PARAMETERS
 
@@ -91,5 +83,6 @@
 
 * RUN WITH: (fusesoc run --target=sim VENDER:CORE:NAME:VERSION)
   - default (for IP integration builds)
+  - lint
   - sim_cocotb
 

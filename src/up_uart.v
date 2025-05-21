@@ -6,7 +6,7 @@
 // date:    2024/02/29
 //
 // about:   Brief
-// uP Core for interfacing with axis uart.
+// uP Core for interfacing with axis uart emulates Xilinx UART lite.
 //
 // license: License MIT
 // Copyright 2024 Jay Convertino
