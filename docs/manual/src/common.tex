@@ -1,7 +1,7 @@
 \begin{titlepage}
   \begin{center}
 
-  {\Huge BUS\_UART}
+  {\Huge BUS\_UART\_LITE}
 
   \vspace{25mm}
 
@@ -27,7 +27,7 @@
 \subsection{Introduction}
 
 \par
-BUS UART is a core for interfacing over RS232 UART to a bus of choice. The core will process data to and from the UART.
+BUS UART LITE is a core for interfacing over RS232 UART to a bus of choice. The core will process data to and from the UART.
 The data can then be accessed over a BUS, currently AXI lite or Wishbone Standard, and processed as needed. All input and output
 over the bus goes into FIFOs that is then tied to the AXIS UART core. The following is information on how to use the device
 in an FPGA, software, and in simulation.
@@ -43,11 +43,11 @@ The following are the dependencies of the cores.
   \item cocotb (simulation)
 \end{itemize}
 
-\input{src/fusesoc/depend_axi_lite_uart.tex}
+\input{src/fusesoc/depend_axi_lite_uart_lite.tex}
 
-\input{src/fusesoc/depend_wishbone_standard_uart.tex}
+\input{src/fusesoc/depend_wishbone_standard_uart_lite.tex}
 
-\input{src/fusesoc/depend_up_uart.tex}
+\input{src/fusesoc/depend_up_uart_lite.tex}
 
 \subsection{In a Project}
 \par
@@ -58,11 +58,11 @@ to be routed so they match the UART device or other.
 \par
 This core is made up of other cores that are documented in detail in there source. The cores this is made up of are the,
 \begin{itemize}
-  \item \textbf{axis\_uart} Interface with UART and present the data over AXIS interface (see core for documentation).
+  \item \textbf{fast\_axis\_uart} Interface with UART and present the data over AXIS interface (see core for documentation).
   \item \textbf{fifo} Used for RX and TX FIFO instances. Set to 16 words buffer max (see core for documentation).
   \item \textbf{up\_axi} An AXI Lite to uP converter core (see core for documentation).
   \item \textbf{up\_wishbone\_standard} A wishbone standard to uP converter core (see core for documentation).
-  \item \textbf{up\_uart} Takes uP bus and coverts it to interface with the RX/TX FIFOs and the AXIS UART (see module documentation for information \ref{Module Documentation}).
+  \item \textbf{up\_uart\_lite} Takes uP bus and coverts it to interface with the RX/TX FIFOs and the AXIS UART (see module documentation for information \ref{Module Documentation}).
 \end{itemize}
 
 For register documentation please see up\_uart in \ref{Module Documentation}
@@ -70,7 +70,7 @@ For register documentation please see up\_uart in \ref{Module Documentation}
 \section{Building}
 
 \par
-The BUS UART is written in Verilog 2001. It should synthesize in any modern FPGA software. The core comes as a fusesoc packaged core and can be included in any other core. Be sure to make sure you have meet the dependencies listed in the previous section. Linting is performed by verible using the lint target.
+The BUS UART LITE is written in Verilog 2001. It should synthesize in any modern FPGA software. The core comes as a fusesoc packaged core and can be included in any other core. Be sure to make sure you have meet the dependencies listed in the previous section. Linting is performed by verible using the lint target.
 
 \subsection{fusesoc}
 \par
@@ -80,19 +80,19 @@ a system and should be integrated into a fusesoc based system. Simulations are s
 
 \subsection{Source Files}
 
-\input{src/fusesoc/files_axi_lite_uart.tex}
+\input{src/fusesoc/files_axi_lite_uart_lite.tex}
 
-\input{src/fusesoc/files_wishbone_standard_uart.tex}
+\input{src/fusesoc/files_wishbone_standard_uart_lite.tex}
 
-\input{src/fusesoc/files_up_uart.tex}
+\input{src/fusesoc/files_up_uart_lite.tex}
 
 \subsection{Targets}
 
-\input{src/fusesoc/targets_axi_lite_uart.tex}
+\input{src/fusesoc/targets_axi_lite_uart_lite.tex}
 
-\input{src/fusesoc/targets_wishbone_standard_uart.tex}
+\input{src/fusesoc/targets_wishbone_standard_uart_lite.tex}
 
-\input{src/fusesoc/targets_up_uart.tex}
+\input{src/fusesoc/targets_up_uart_lite.tex}
 
 \subsection{Directory Guide}
 
@@ -125,42 +125,41 @@ axi\_lite, wishbone\_standard, and uP based versions. This is currently set to u
 \par
 To run the wishbone sim use the command below.
 \begin{lstlisting}[language=bash]
-fusesoc run --target sim_cocotb AFRL:device:wishbone_standard_uart:1.0.0
+fusesoc run --target sim_cocotb AFRL:device:wishbone_standard_uart_lite:1.0.0
 \end{lstlisting}
 
 \par
 To run the axi\_lite sim use the command below.
 \begin{lstlisting}[language=bash]
-fusesoc run --target sim_cocotb AFRL:device:axi_lite_uart:1.0.0
+fusesoc run --target sim_cocotb AFRL:device:axi_lite_uart_lite:1.0.0
 \end{lstlisting}
 
 \par
 To run the uP sim use the command below.
 \begin{lstlisting}[language=bash]
-fusesoc run --target sim_cocotb AFRL:device:up_uart:1.0.0
+fusesoc run --target sim_cocotb AFRL:device:up_uart_lite:1.0.0
 \end{lstlisting}
-
 
 \newpage
 
 \section{Module Documentation} \label{Module Documentation}
 
 \par
-up\_uart is the module that integrates the AXIS UART core.
+up\_uart\_lite is the module that integrates the AXIS UART core.
 This includes FIFO's that have there inputs/outputs for data tied to registers mapped in the uP bus.
 The uP bus is the microprocessor bus based on Analog Devices design. It resembles a APB bus in design,
-and is the bridge to other buses BUS UART can use. This makes changing for AXI Lite, to Wishbone to whatever
+and is the bridge to other buses BUS UART LITE can use. This makes changing for AXI Lite, to Wishbone to whatever
 quick and painless.
 
 \par
-axi\_lite\_uart module adds a AXI Lite to uP (microprocessor) bus converter. The converter is
+axi\_lite\_uart\_lite module adds a AXI Lite to uP (microprocessor) bus converter. The converter is
 from Analog Devices.
 
 \par
-wishbone\_standard\_uart module adds a Wishbone Standard to uP (microprocessor) bus converter. This
+wishbone\_standard\_uart\_lite module adds a Wishbone Standard to uP (microprocessor) bus converter. This
 converter was designed for Wishbone Standard only, NOT pipelined.
 
 \vspace{15mm}
 \par
-The next sections document these modules in great detail. up\_uart contains the register map explained, and what the various bits do.
+The next sections document these modules. up\_uart\_lite contains the register map explained, and what the various bits do.
 

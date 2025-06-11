@@ -1,1 +1,1 @@
-﻿NDSearch.OnPrefixDataLoaded("ena",["RegisterBit"],[["ENABLE_INTR_BIT",,[["up_uart",,,,0,"File:up_uart.v:up_uart.ENABLE_INTR_BIT","SystemVerilogModule:up_uart:ENABLE_INTR_BIT"]]]]);
+﻿NDSearch.OnPrefixDataLoaded("ena",["RegisterBit"],[["ENABLE_INTR_BIT",,[["up_uart_lite",,,,0,"File:up_uart_lite.v:up_uart_lite.ENABLE_INTR_BIT","SystemVerilogModule:up_uart_lite:ENABLE_INTR_BIT"]]]]);

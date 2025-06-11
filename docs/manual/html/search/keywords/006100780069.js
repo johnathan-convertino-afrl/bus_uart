@@ -1,1 +1,1 @@
-﻿NDSearch.OnPrefixDataLoaded("axi",["Module","File"],[["axi_lite_uart",,[[,,,,0,"File:axi_lite_uart.v:axi_lite_uart","SystemVerilogModule:axi_lite_uart"],[,"axi_lite_uart.v",,,1,"File:axi_lite_uart.v:axi_lite_uart.v"]]]]);
+﻿NDSearch.OnPrefixDataLoaded("axi",["Module","File"],[["axi_lite_uart_lite",,[[,,,,0,"File:axi_lite_uart_lite.v:axi_lite_uart_lite","SystemVerilogModule:axi_lite_uart_lite"],[,"axi_lite_uart_lite.v",,,1,"File:axi_lite_uart_lite.v:axi_lite_uart_lite.v"]]]]);

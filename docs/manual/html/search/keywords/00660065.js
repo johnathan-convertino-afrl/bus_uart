@@ -1,1 +1,1 @@
-﻿NDSearch.OnPrefixDataLoaded("fe",["RegisterBit"],[["FE",,[["up_uart",,,,0,"File:up_uart.v:up_uart.FE","SystemVerilogModule:up_uart:FE"]]]]);
+﻿NDSearch.OnPrefixDataLoaded("fe",["RegisterBit"],[["FE",,[["up_uart_lite",,,,0,"File:up_uart_lite.v:up_uart_lite.FE","SystemVerilogModule:up_uart_lite:FE"]]]]);

@@ -1,1 +1,1 @@
-﻿NDFramePage.OnPageTitleLoaded("SystemVerilogModule:inst_tx_fifo","inst_tx_fifo");NDSummary.OnSummaryLoaded("SystemVerilogModule:inst_tx_fifo",[["SystemVerilog","SystemVerilog"]],[["Modules","Module"]],[[72,0,0,"inst_tx_fifo"]]);
+﻿NDFramePage.OnPageTitleLoaded("SystemVerilogModule:inst_tx_fifo","inst_tx_fifo");NDSummary.OnSummaryLoaded("SystemVerilogModule:inst_tx_fifo",[["SystemVerilog","SystemVerilog"]],[["Modules","Module"]],[[154,0,0,"inst_tx_fifo"]]);

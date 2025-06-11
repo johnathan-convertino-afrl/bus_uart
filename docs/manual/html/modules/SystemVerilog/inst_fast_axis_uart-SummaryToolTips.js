@@ -1,0 +1,1 @@
+﻿NDSummary.OnToolTipsLoaded("SystemVerilogModule:inst_fast_axis_uart",{152:"<div class=\"NDToolTip TModule LSystemVerilog\"><div class=\"TTSummary\">FAST UART instance with AXIS interface for TX/RX</div></div>"});

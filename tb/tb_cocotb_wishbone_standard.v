@@ -44,13 +44,10 @@
  *   BUS_WIDTH       - Number of bytes for the data bus.
  *   CLOCK_SPEED     - This is the aclk frequency in Hz
  *   BAUD_RATE       - Serial Baud, this can be any value including non-standard.
- *   PARITY_ENA      - Enable Parity for the data in and out.
- *   PARITY_TYPE     - Set the parity type, 0 = even, 1 = odd, 2 = mark, 3 = space.
+ *   PARITY_TYPE     - Set the parity type, 0 = none, 1 = even, 2 = odd, 3 = mark, 4 = space.
  *   STOP_BITS       - Number of stop bits, 0 to crazy non-standard amounts.
  *   DATA_BITS       - Number of data bits, 1 to crazy non-standard amounts.
- *   RX_DELAY        - Delay in rx data input.
  *   RX_BAUD_DELAY   - Delay in rx baud enable. This will delay when we sample a bit (default is midpoint when rx delay is 0).
- *   TX_DELAY        - Delay in tx data output. Delays the time to output of the data.
  *   TX_BAUD_DELAY   - Delay in tx baud enable. This will delay the time the bit output starts.
  *
  * Ports:
@@ -69,26 +66,21 @@
  *   irq            - Interrupt when data is received
  *   tx             - transmit for UART (output to RX)
  *   rx             - receive for UART (input from TX)
- *   rts            - request to send is a loop with CTS
- *   cts            - clear to send is a loop with RTS
  */
 module tb_cocotb #(
     parameter ADDRESS_WIDTH     = 32,
     parameter BUS_WIDTH         = 4,
     parameter CLOCK_SPEED       = 100000000,
     parameter BAUD_RATE         = 115200,
-    parameter PARITY_ENA        = 0,
     parameter PARITY_TYPE       = 0,
     parameter STOP_BITS         = 1,
     parameter DATA_BITS         = 8,
-    parameter RX_DELAY          = 0,
     parameter RX_BAUD_DELAY     = 0,
-    parameter TX_DELAY          = 0,
     parameter TX_BAUD_DELAY     = 0
   )
   (
-    input           clk,
-    input           rst,
+    input                       clk,
+    input                       rst,
     input                       s_wb_cyc,
     input                       s_wb_stb,
     input                       s_wb_we,
@@ -100,9 +92,7 @@ module tb_cocotb #(
     output                      s_wb_err,
     output                      irq,
     output                      tx,
-    input                       rx,
-    output                      rts,
-    input                       cts
+    input                       rx
   );
 
   // fst dump command
@@ -117,20 +107,17 @@ module tb_cocotb #(
   /*
    * Module: dut
    *
-   * Device under test, wishbone_standard_uart
+   * Device under test, wishbone_standard_uart_lite
    */
-  wishbone_standard_uart #(
+  wishbone_standard_uart_lite #(
     .ADDRESS_WIDTH(ADDRESS_WIDTH),
     .BUS_WIDTH(BUS_WIDTH),
     .CLOCK_SPEED(CLOCK_SPEED),
     .BAUD_RATE(BAUD_RATE),
-    .PARITY_ENA(PARITY_ENA),
     .PARITY_TYPE(PARITY_TYPE),
     .STOP_BITS(STOP_BITS),
     .DATA_BITS(DATA_BITS),
-    .RX_DELAY(RX_DELAY),
     .RX_BAUD_DELAY(RX_BAUD_DELAY),
-    .TX_DELAY(TX_DELAY),
     .TX_BAUD_DELAY(TX_BAUD_DELAY)
   ) dut (
     .clk(clk),
@@ -146,9 +133,7 @@ module tb_cocotb #(
     .s_wb_err(s_wb_err),
     .irq(irq),
     .tx(tx),
-    .rx(rx),
-    .rts(rts),
-    .cts(cts)
+    .rx(rx)
   );
   
 endmodule

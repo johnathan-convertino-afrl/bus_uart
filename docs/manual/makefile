@@ -1,4 +1,4 @@
-PROJECT_NAME := bus_uart
+PROJECT_NAME := bus_uart_lite
 
 MK_DIR := makefiles
 

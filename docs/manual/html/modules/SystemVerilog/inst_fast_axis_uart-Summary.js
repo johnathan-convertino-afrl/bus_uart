@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("SystemVerilogModule:inst_fast_axis_uart","inst_fast_axis_uart");NDSummary.OnSummaryLoaded("SystemVerilogModule:inst_fast_axis_uart",[["SystemVerilog","SystemVerilog"]],[["Modules","Module"]],[[152,0,0,"inst_fast_axis_uart"]]);
