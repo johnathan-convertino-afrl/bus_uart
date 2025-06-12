@@ -76,7 +76,7 @@
  *   tx             - transmit for UART (output to RX)
  *   rx             - receive for UART (input from TX)
  */
-module axi_lite_uart #(
+module axi_lite_uart_lite #(
     parameter ADDRESS_WIDTH     = 32,
     parameter BUS_WIDTH         = 4,
     parameter CLOCK_SPEED       = 100000000,

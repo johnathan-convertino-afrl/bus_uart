@@ -17,7 +17,7 @@ filesets:
   dep:
     depend:
       - AFRL:utility:helper:1.0.0
-      - AFRL:device:up_uart:1.0.0
+      - AFRL:device:up_uart_lite:1.0.0
       - AD:common:up_axi:1.0.0
       
   dep_tb:

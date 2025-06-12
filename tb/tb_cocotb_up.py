@@ -117,7 +117,12 @@ async def increment_test_uart_rx(dut):
         await uart_source.write(data)
 
         status_reg = await up_master.read(2)
-
+        
+        #wait to do rx_data read when we have valid data
+        while(status_reg & 1 != 1):
+          await RisingEdge(dut.clk)
+          status_reg = await up_master.read(2)
+          
         rx_data = await up_master.read(0)
 
         assert rx_data & 0x000000FF == x, "RECEIVED COMMAND OVER UP DOES NOT MATCH SOURCE DATA"

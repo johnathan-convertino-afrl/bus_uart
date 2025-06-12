@@ -317,8 +317,8 @@ module up_uart_lite #(
     .STOP_BITS(STOP_BITS),
     .DATA_BITS(DATA_BITS),
     .RX_BAUD_DELAY(RX_BAUD_DELAY),
-    .TX_BAUD_DELAY(TX_BAUD_DELAY),
-  ) inst_axis_uart (
+    .TX_BAUD_DELAY(TX_BAUD_DELAY)
+  ) inst_fast_axis_uart (
     .aclk(clk),
     .arstn(rstn),
     .parity_err(s_parity_err),
@@ -329,8 +329,6 @@ module up_uart_lite #(
     .m_axis_tdata(m_axis_tdata),
     .m_axis_tvalid(m_axis_tvalid),
     .m_axis_tready(~rx_full),
-    .uart_clk(clk),
-    .uart_rstn(rstn),
     .tx(tx),
     .rx(rx)
   );
