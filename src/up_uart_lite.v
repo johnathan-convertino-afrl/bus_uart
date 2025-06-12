@@ -163,10 +163,10 @@ module up_uart_lite #(
   reg                       r_tx_wen;
 
   //uart rx
-  wire [ 7:0]               m_axis_tdata;
+  wire [15:0]               m_axis_tdata;
   wire                      m_axis_tvalid;
   wire                      rx_full;
-  wire [ 7:0]               rx_rdata;
+  wire [15:0]               rx_rdata;
   wire                      rx_valid;
   wire                      rx_empty;
   wire                      s_rx_ren;
@@ -230,7 +230,8 @@ module up_uart_lite #(
             r_up_rdata <= {{(BUS_WIDTH*8-DATA_BITS){1'b0}}, rx_rdata[DATA_BITS-1:0]};
           end
           STATUS_REG: begin
-            r_up_rdata <= {{(BUS_WIDTH*8-8){1'b0}}, s_parity_err, s_frame_err, r_overflow, r_irq_en, tx_full, tx_empty, rx_full, rx_valid};
+            //rx_rdata[9] is parity error, rx_rdata[8] is frame error
+            r_up_rdata <= {{(BUS_WIDTH*8-8){1'b0}}, rx_rdata[9], rx_rdata[8], r_overflow, r_irq_en, tx_full, tx_empty, rx_full, rx_valid};
             r_overflow <= 1'b0;
           end
           default:begin
@@ -321,17 +322,19 @@ module up_uart_lite #(
   ) inst_fast_axis_uart (
     .aclk(clk),
     .arstn(rstn),
-    .parity_err(s_parity_err),
-    .frame_err(s_frame_err),
+    .parity_err(m_axis_tdata[9]),
+    .frame_err(m_axis_tdata[8]),
     .s_axis_tdata(tx_rdata),
     .s_axis_tvalid(tx_valid),
     .s_axis_tready(s_axis_tready),
-    .m_axis_tdata(m_axis_tdata),
+    .m_axis_tdata(m_axis_tdata[7:0]),
     .m_axis_tvalid(m_axis_tvalid),
     .m_axis_tready(~rx_full),
     .tx(tx),
     .rx(rx)
   );
+  
+  assign m_axis_tdata[15:10] = 0;
 
   /*
    * Module: inst_rx_fifo
@@ -340,7 +343,7 @@ module up_uart_lite #(
    */
   fifo #(
     .FIFO_DEPTH(FIFO_DEPTH),
-    .BYTE_WIDTH(1),
+    .BYTE_WIDTH(2),
     .COUNT_WIDTH(8),
     .FWFT(1),
     .RD_SYNC_DEPTH(0),
