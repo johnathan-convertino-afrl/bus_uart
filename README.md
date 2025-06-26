@@ -1,5 +1,6 @@
 # BUS UART LITE
 ### UART TO BUS (WISHBONE STANDARD, AXI_LITE)
+---
 
 ![image](docs/manual/img/AFRL.png)
 
